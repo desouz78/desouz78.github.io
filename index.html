@@ -4,18 +4,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta
-    name="description"
-    content="The personal academic website and research portfolio of Luciano Stork."
-  >
+  <meta name="theme-color" content="#030916">
+  <meta name="description" content="Personal academic website and research portfolio of Luciano Stork.">
 
   <title>Luciano Stork | Research Portfolio</title>
 
   <style>
     /* =========================================
-       1. GLOBAL SETTINGS
+       1. DESIGN SYSTEM
        ========================================= */
+
+    :root {
+      --bg: #030916;
+      --surface: #07101f;
+      --text: #f0f2f7;
+      --muted: #a6b4c8;
+      --subtle: #7890aa;
+      --border: rgba(178, 199, 226, 0.16);
+      --accent: #e98a55;
+      --max-width: 1240px;
+    }
 
     * {
       margin: 0;
@@ -28,168 +36,210 @@
     }
 
     body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #07111f;
-      color: #f4f7fb;
       min-height: 100vh;
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(158, 181, 211, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(158, 181, 211, 0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
       -webkit-font-smoothing: antialiased;
     }
 
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: calc(100% - 64px);
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
     /* =========================================
-       2. HERO SECTION
+       2. NAVIGATION
+       ========================================= */
+
+    .site-header {
+      position: relative;
+      z-index: 10;
+      margin-top: 18px;
+    }
+
+    .navbar {
+      min-height: 72px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      background: rgba(7, 16, 31, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .brand-symbol {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: var(--text);
+      color: var(--bg);
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nav-links a {
+      padding: 11px 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-links .active {
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* =========================================
+       3. HERO
        ========================================= */
 
     .hero {
-      min-height: 100vh;
-      min-height: 100svh;
-
+      min-height: calc(100svh - 190px);
       display: grid;
-      grid-template-columns:
-        minmax(0, 1.05fr)
-        minmax(0, 0.95fr);
-
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
       align-items: center;
-      gap: clamp(24px, 4vw, 72px);
-
-      padding:
-        80px
-        clamp(24px, 7vw, 120px);
-
-      position: relative;
-      overflow: hidden;
-
-      background: linear-gradient(
-        135deg,
-        #081222 0%,
-        #0b1730 55%,
-        #09111d 100%
-      );
+      gap: 32px;
+      padding: 64px 0;
     }
 
-    /* =========================================
-       3. HERO TEXT
-       ========================================= */
-
     .hero-text {
-      position: relative;
-      max-width: 620px;
-      z-index: 2;
+      border-left: 1px solid rgba(196, 211, 232, 0.55);
+      padding: 75px 0 75px 30px;
+      min-width: 0;
     }
 
     .eyebrow {
-      color: #8fa8c7;
-      font-size: 0.95rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      margin-bottom: 18px;
+      color: #89afc8;
+      margin-bottom: 24px;
     }
 
     h1 {
-      font-size: clamp(2.8rem, 5.5vw, 5.2rem);
-      font-weight: 700;
+      font-size: clamp(3.1rem, 5.2vw, 5.4rem);
       line-height: 1.05;
-      letter-spacing: -0.035em;
-      margin-bottom: 22px;
+      letter-spacing: -0.055em;
+      font-weight: 750;
+      margin-bottom: 24px;
     }
 
     .tagline {
-      font-size: clamp(1.15rem, 1.8vw, 1.45rem);
-      line-height: 1.5;
+      font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+      line-height: 1.6;
       font-style: italic;
-      color: #d7e1ef;
-      max-width: 560px;
-      margin-bottom: 26px;
+      color: #d5deeb;
+      max-width: 540px;
+      margin-bottom: 24px;
     }
 
     .intro {
-      font-size: 1.05rem;
-      line-height: 1.75;
-      color: #b8c7da;
-      max-width: 560px;
-      margin-bottom: 36px;
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--muted);
+      max-width: 490px;
+      margin-bottom: 32px;
     }
 
     /* =========================================
-       4. NAVIGATION BUTTONS
+       4. BUTTONS
        ========================================= */
 
     .buttons {
       display: flex;
-      align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
-      gap: 14px;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-
-      padding: 14px 22px;
-      border-radius: 999px;
-
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 600;
-
-      transition:
-        background 0.25s ease,
-        transform 0.25s ease,
-        border-color 0.25s ease;
+      padding: 13px 18px;
+      font-size: 0.88rem;
+      font-weight: 650;
+      border: 1px solid var(--border);
+      transition: transform 0.2s ease, background 0.2s ease;
     }
 
     .btn-primary {
-      background: #f4f7fb;
-      color: #081222;
-    }
-
-    .btn-primary:hover {
-      background: #dce7f5;
-      transform: translateY(-2px);
+      background: var(--text);
+      color: var(--bg);
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #f4f7fb;
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--text);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
     }
 
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.4);
-      transform: translateY(-2px);
     }
 
-    .btn:focus-visible {
-      outline: 2px solid #f4f7fb;
+    a:focus-visible {
+      outline: 2px solid var(--accent);
       outline-offset: 4px;
     }
 
     /* =========================================
-       5. THREE.JS ANTENNA SCENE
+       5. ANTENNA VISUALIZATION
        ========================================= */
 
     .hero-visual {
       position: relative;
       width: 100%;
       min-width: 0;
-
       display: flex;
-      justify-content: center;
       align-items: center;
-
-      z-index: 1;
+      justify-content: center;
     }
 
     .visual-wrap {
       position: relative;
-
       width: 100%;
-      max-width: 650px;
-      height: min(72vh, 600px);
-      min-height: 400px;
-
+      height: min(65vh, 600px);
+      min-height: 450px;
       overflow: hidden;
     }
 
@@ -200,112 +250,162 @@
     }
 
     /* =========================================
-       6. RESPONSIVE DESIGN
+       6. ACADEMIC INFORMATION
+       ========================================= */
+
+    .academic-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 54px;
+    }
+
+    .academic-item {
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .academic-item:first-child {
+      padding-left: 0;
+    }
+
+    .academic-item + .academic-item {
+      border-left: 1px solid var(--border);
+    }
+
+    .academic-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--subtle);
+    }
+
+    .academic-value {
+      color: #d5deeb;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    /* =========================================
+       7. RESPONSIVE
        ========================================= */
 
     @media (max-width: 980px) {
-
       .hero {
         grid-template-columns: 1fr;
-        gap: 24px;
-
-        padding:
-          72px
-          clamp(24px, 6vw, 60px);
+        gap: 0;
+        padding: 60px 0 24px;
       }
 
       .hero-text {
-        max-width: 700px;
-      }
-
-      .hero-visual {
-        width: 100%;
+        padding: 30px 0 30px 24px;
       }
 
       .visual-wrap {
-        width: 100%;
-        max-width: 500px;
-        height: 420px;
+        max-width: 650px;
+        height: 440px;
         min-height: 0;
       }
-
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 650px) {
+      .container {
+        width: calc(100% - 36px);
+      }
 
-      .hero {
-        padding: 56px 24px;
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
         gap: 12px;
       }
 
+      .nav-links {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 2px;
+      }
+
+      .nav-links a {
+        padding: 9px 10px;
+        font-size: 0.78rem;
+      }
+
+      .hero {
+        padding-top: 45px;
+      }
+
       h1 {
-        font-size: clamp(2.6rem, 11vw, 4rem);
+        font-size: clamp(2.8rem, 11vw, 4rem);
       }
 
-      .eyebrow {
-        font-size: 0.8rem;
-      }
-
-      .tagline {
-        font-size: 1.15rem;
-      }
-
-      .intro {
-        font-size: 0.98rem;
-        line-height: 1.7;
-      }
-
-      .buttons {
-        gap: 10px;
-      }
-
-      .btn {
-        padding: 12px 18px;
-        font-size: 0.88rem;
+      .hero-text {
+        padding-left: 20px;
       }
 
       .visual-wrap {
         height: 340px;
       }
 
+      .academic-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .academic-item,
+      .academic-item:first-child {
+        padding: 18px 0;
+      }
+
+      .academic-item + .academic-item {
+        border-left: none;
+        border-top: 1px solid var(--border);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-
       html {
         scroll-behavior: auto;
       }
 
-      .btn {
+      .btn, .nav-links a {
         transition: none;
       }
-
     }
-
   </style>
 </head>
 
 <body>
 
-  <!-- =======================================
-       HERO SECTION
-       ======================================= -->
+  <!-- Navigation -->
+  <header class="site-header container">
+    <nav class="navbar" aria-label="Main navigation">
+      <a href="#home" class="brand">
+        <span class="brand-symbol">LS.</span>
+        <span>Luciano Stork</span>
+      </a>
 
-  <main>
+      <div class="nav-links">
+        <a href="#home" class="active" aria-current="page">Home</a>
+        <a href="#hands-on">Hands-on</a>
+        <a href="#about">About</a>
+        <a href="#writing">Writing</a>
+        <a href="mailto:desouz78@rowan.edu">Contact</a>
+      </div>
+    </nav>
+  </header>
 
+  <main class="container">
+
+    <!-- Homepage -->
     <section class="hero" id="home">
 
-      <!-- Introduction -->
-
       <div class="hero-text">
+        <p class="eyebrow">PhD Research Portfolio</p>
 
-        <p class="eyebrow">
-          PhD Research Portfolio
-        </p>
-
-        <h1>
-          Luciano Stork
-        </h1>
+        <h1>Luciano Stork</h1>
 
         <p class="tagline">
           Close to discovering something I still cannot name.
@@ -319,44 +419,47 @@
         </p>
 
         <div class="buttons">
-
-          <a href="#hands-on" class="btn btn-primary">
-            Explore Hands-on
-          </a>
-
-          <a href="#writing" class="btn btn-secondary">
-            Read My Writing
-          </a>
-
+          <a href="#hands-on" class="btn btn-primary">Explore Hands-on</a>
+          <a href="#writing" class="btn btn-secondary">Read My Writing</a>
         </div>
-
       </div>
 
       <!-- Interactive 3D Antenna -->
-
       <div class="hero-visual">
-
         <div
           id="antenna-scene"
           class="visual-wrap"
           role="img"
           aria-label="Interactive 3D visualization of a cross-polarized Yagi antenna"
         ></div>
+      </div>
 
+    </section>
+
+    <!-- Academic Overview -->
+    <section class="academic-strip" aria-label="Academic overview">
+
+      <div class="academic-item">
+        <span class="academic-label">Affiliation</span>
+        <span class="academic-value">Rowan University</span>
+      </div>
+
+      <div class="academic-item">
+        <span class="academic-label">Research Interests</span>
+        <span class="academic-value">Wireless Sensing & Signal Processing</span>
+      </div>
+
+      <div class="academic-item">
+        <span class="academic-label">Background</span>
+        <span class="academic-value">Telecommunications Engineering</span>
       </div>
 
     </section>
 
   </main>
 
-  <!-- =======================================
-       THREE.JS ANTENNA MODULE
-       ======================================= -->
-
-  <script
-  type="module"
-  src="./js/antenna.js?v=4"
-></script>
+  <!-- Interactive Antenna -->
+  <script type="module" src="./js/antenna.js?v=4"></script>
 
 </body>
 </html>
