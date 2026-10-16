@@ -13,7 +13,7 @@ if (!container) {
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200);
-camera.position.set(7, 3.8, 8.5);
+camera.position.set(8.6, 4.6, 11.2);
 camera.lookAt(0.4, 0.2, 0);
 
 const renderer = new THREE.WebGLRenderer({
@@ -317,8 +317,8 @@ for (let i = 0; i < 4; i++) {
 
 antenna.rotation.y = -0.78;
 antenna.rotation.x = -0.08;
-antenna.position.set(0.4, -0.15, 0);
-antenna.scale.setScalar(1.15);
+antenna.position.set(0.15, -0.2, 0);
+antenna.scale.setScalar(0.96);
 
 
 /* =========================================
@@ -338,7 +338,7 @@ let targetRotationY = antenna.rotation.y;
 
 // Invisible interaction area around the antenna
 const hitbox = new THREE.Mesh(
-  new THREE.BoxGeometry(2.7, 4.0, 7.5),
+  new THREE.BoxGeometry(4.2, 5.2, 10.5),
   new THREE.MeshBasicMaterial({
     transparent: true,
     opacity: 0,
@@ -383,11 +383,7 @@ canvas.addEventListener("pointermove", (event) => {
 
   targetRotationY += deltaX * 0.006;
 
-  targetRotationX = THREE.MathUtils.clamp(
-    targetRotationX + deltaY * 0.005,
-    -0.9,
-    0.9
-  );
+  targetRotationX = THREE.MathUtils.clamp(targetRotationX + deltaY * 0.005, -0.55, 0.55);
 
   previousX = event.clientX;
   previousY = event.clientY;
