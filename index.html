@@ -6,14 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#030916">
   <meta name="description" content="Personal academic website and research portfolio of Luciano Stork.">
-
   <title>Luciano Stork | Research Portfolio</title>
 
   <style>
-    /* =========================================
-       1. DESIGN SYSTEM
-       ========================================= */
-
+    /* 1. DESIGN SYSTEM */
     :root {
       --bg: #030916;
       --surface: #07101f;
@@ -25,15 +21,8 @@
       --max-width: 1240px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       min-height: 100vh;
@@ -47,10 +36,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+    a { color: inherit; text-decoration: none; }
 
     .container {
       width: calc(100% - 64px);
@@ -58,15 +44,8 @@
       margin: 0 auto;
     }
 
-    /* =========================================
-       2. NAVIGATION
-       ========================================= */
-
-    .site-header {
-      position: relative;
-      z-index: 10;
-      margin-top: 18px;
-    }
+    /* 2. NAVIGATION */
+    .site-header { position: relative; z-index: 10; margin-top: 18px; }
 
     .navbar {
       min-height: 72px;
@@ -108,10 +87,7 @@
       letter-spacing: -0.05em;
     }
 
-    .brand-divider {
-      color: var(--subtle);
-      font-weight: 400;
-    }
+    .brand-divider { color: var(--subtle); font-weight: 400; }
 
     .brand-university {
       color: var(--muted);
@@ -121,9 +97,7 @@
       transition: color 0.2s ease;
     }
 
-    .brand-university:hover {
-      color: var(--text);
-    }
+    .brand-university:hover { color: var(--text); }
 
     .nav-links {
       display: flex;
@@ -158,23 +132,41 @@
       cursor: default;
     }
 
-    /* =========================================
-       3. HERO SECTION
-       ========================================= */
-
+    /* 3. HERO AND FULL-WIDTH RADIATION */
     .hero {
+      position: relative;
+      isolation: isolate;
       min-height: calc(100svh - 190px);
       display: grid;
       grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
       align-items: center;
       gap: 24px;
       padding: 54px 0;
+      overflow: visible;
+    }
+
+    .hero-radiation {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 0;
     }
 
     .hero-text {
+      position: relative;
+      z-index: 2;
+      min-width: 0;
       border-left: 1px solid rgba(196, 211, 232, 0.55);
       padding: 54px 0 54px 30px;
-      min-width: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(3, 9, 22, 0.90),
+        rgba(3, 9, 22, 0.72) 72%,
+        transparent
+      );
     }
 
     h1 {
@@ -202,14 +194,9 @@
       margin-bottom: 34px;
     }
 
-    .intro p + p {
-      margin-top: 16px;
-    }
+    .intro p + p { margin-top: 16px; }
 
-    /* =========================================
-       4. BUTTONS
-       ========================================= */
-
+    /* 4. BUTTONS */
     .buttons {
       display: flex;
       align-items: center;
@@ -228,35 +215,16 @@
       transition: transform 0.2s ease, background 0.2s ease;
     }
 
-    .btn-primary {
-      background: var(--text);
-      color: var(--bg);
-    }
+    .btn-primary { background: var(--text); color: var(--bg); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.025); color: var(--text); }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.08); }
+    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.025);
-      color: var(--text);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    a:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 4px;
-    }
-
-    /* =========================================
-       5. THREE.JS ANTENNA SCENE
-       ========================================= */
-
+    /* 5. THREE.JS ANTENNA */
     .hero-visual {
       position: relative;
+      z-index: 2;
       width: 100%;
       min-width: 0;
       display: flex;
@@ -277,10 +245,7 @@
       height: 100%;
     }
 
-    /* =========================================
-       6. ACADEMIC OVERVIEW
-       ========================================= */
-
+    /* 6. ACADEMIC OVERVIEW */
     .academic-strip {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -296,13 +261,8 @@
       gap: 10px;
     }
 
-    .academic-item:first-child {
-      padding-left: 0;
-    }
-
-    .academic-item + .academic-item {
-      border-left: 1px solid var(--border);
-    }
+    .academic-item:first-child { padding-left: 0; }
+    .academic-item + .academic-item { border-left: 1px solid var(--border); }
 
     .academic-label {
       font-size: 0.7rem;
@@ -326,22 +286,11 @@
       transition: text-decoration-color 0.2s ease;
     }
 
-    .academic-value a:hover {
-      text-decoration-color: var(--text);
-    }
+    .academic-value a:hover { text-decoration-color: var(--text); }
 
-    /* =========================================
-       7. RESPONSIVE DESIGN
-       ========================================= */
-
+    /* 7. RESPONSIVE DESIGN */
     @media (max-width: 1150px) {
-      .navbar {
-        flex-wrap: wrap;
-      }
-
-      .nav-links {
-        flex-wrap: wrap;
-      }
+      .navbar, .nav-links { flex-wrap: wrap; }
     }
 
     @media (max-width: 980px) {
@@ -351,9 +300,7 @@
         padding: 60px 0 24px;
       }
 
-      .hero-text {
-        padding: 30px 0 30px 24px;
-      }
+      .hero-text { padding: 30px 0 30px 24px; }
 
       .visual-wrap {
         max-width: 700px;
@@ -362,98 +309,34 @@
     }
 
     @media (max-width: 650px) {
-      .container {
-        width: calc(100% - 36px);
-      }
-
-      .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-      }
-
-      .brand {
-        gap: 8px;
-      }
-
-      .brand-divider {
-        display: none;
-      }
-
-      .brand-university {
-        font-size: 0.8rem;
-      }
-
-      .nav-links {
-        width: 100%;
-        flex-wrap: wrap;
-        gap: 2px;
-      }
-
-      .nav-links a,
-      .nav-links .nav-pending {
-        padding: 9px 10px;
-        font-size: 0.78rem;
-      }
-
-      .hero {
-        padding-top: 45px;
-      }
-
-      h1 {
-        font-size: clamp(2.8rem, 11vw, 4rem);
-      }
-
-      .hero-text {
-        padding-left: 20px;
-      }
-
-      .intro {
-        font-size: 0.95rem;
-      }
-
-      .visual-wrap {
-        height: 420px;
-      }
-
-      .academic-strip {
-        grid-template-columns: 1fr;
-      }
-
-      .academic-item,
-      .academic-item:first-child {
-        padding: 18px 0;
-      }
-
-      .academic-item + .academic-item {
-        border-left: none;
-        border-top: 1px solid var(--border);
-      }
+      .container { width: calc(100% - 36px); }
+      .navbar { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .brand { gap: 8px; }
+      .brand-divider { display: none; }
+      .brand-university { font-size: 0.8rem; }
+      .nav-links { width: 100%; flex-wrap: wrap; gap: 2px; }
+      .nav-links a, .nav-links .nav-pending { padding: 9px 10px; font-size: 0.78rem; }
+      .hero { padding-top: 45px; }
+      h1 { font-size: clamp(2.8rem, 11vw, 4rem); }
+      .hero-text { padding-left: 20px; }
+      .intro { font-size: 0.95rem; }
+      .visual-wrap { height: 420px; }
+      .academic-strip { grid-template-columns: 1fr; }
+      .academic-item, .academic-item:first-child { padding: 18px 0; }
+      .academic-item + .academic-item { border-left: none; border-top: 1px solid var(--border); }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      html {
-        scroll-behavior: auto;
-      }
-
-      .btn,
-      .nav-links a,
-      .brand-university {
-        transition: none;
-      }
+      html { scroll-behavior: auto; }
+      .btn, .nav-links a, .brand-university { transition: none; }
     }
   </style>
 </head>
 
 <body>
-
-  <!-- =========================================
-       NAVIGATION
-       ========================================= -->
-
+  <!-- NAVIGATION -->
   <header class="site-header container">
     <nav class="navbar" aria-label="Main navigation">
-
       <div class="brand">
         <a href="#home" class="brand-home">
           <span class="brand-symbol">LS.</span>
@@ -475,21 +358,20 @@
         <span class="nav-pending" aria-label="Resume, not yet available">Resume</span>
         <a href="mailto:desouz78@rowan.edu">Contact</a>
       </div>
-
     </nav>
   </header>
 
-  <!-- =========================================
-       MAIN CONTENT
-       ========================================= -->
-
   <main class="container">
-
-    <!-- Homepage -->
+    <!-- HOMEPAGE -->
     <section class="hero" id="home">
+      <svg
+        id="hero-radiation"
+        class="hero-radiation"
+        aria-hidden="true"
+        focusable="false"
+      ></svg>
 
       <div class="hero-text">
-
         <h1>Luciano Stork</h1>
 
         <p class="tagline">
@@ -505,9 +387,9 @@
           <p>
             I'm Luciano, a Brazilian telecommunications engineer and PhD
             student in Computer Science at Rowan University. Somewhere
-            between electromagnetic waves, signal processing, and
-            sensing, I find myself chasing questions that often lead to
-            more questions than answers.
+            between electromagnetic waves, signal processing, and sensing,
+            I find myself chasing questions that often lead to more
+            questions than answers.
           </p>
 
           <p>
@@ -520,24 +402,21 @@
           <a href="#hands-on" class="btn btn-primary">Explore Hands-on</a>
           <a href="#writing" class="btn btn-secondary">Read My Writing</a>
         </div>
-
       </div>
 
-      <!-- Interactive 3D Antenna -->
+      <!-- INTERACTIVE YAGI-UDA -->
       <div class="hero-visual">
         <div
           id="antenna-scene"
           class="visual-wrap"
           role="img"
-          aria-label="Interactive 3D visualization of a cross-polarized Yagi antenna"
+          aria-label="Interactive 3D Yagi-Uda antenna with directional radiation"
         ></div>
       </div>
-
     </section>
 
-    <!-- Academic Overview -->
+    <!-- ACADEMIC OVERVIEW -->
     <section class="academic-strip" aria-label="Academic overview">
-
       <div class="academic-item">
         <span class="academic-label">Affiliation</span>
         <span class="academic-value">Rowan University</span>
@@ -545,7 +424,7 @@
 
       <div class="academic-item">
         <span class="academic-label">Research Interests</span>
-        <span class="academic-value">Sensing & Signal Processing</span>
+        <span class="academic-value">Sensing &amp; Signal Processing</span>
       </div>
 
       <div class="academic-item">
@@ -555,13 +434,9 @@
           <a href="https://www.ufsj.edu.br/" target="_blank" rel="noopener noreferrer">UFSJ ↗</a>
         </span>
       </div>
-
     </section>
-
   </main>
 
-  <!-- Interactive 3D Antenna -->
-  <script type="module" src="./js/antenna.js?v=5"></script>
-
+  <script type="module" src="./js/antenna.js?v=6"></script>
 </body>
 </html>

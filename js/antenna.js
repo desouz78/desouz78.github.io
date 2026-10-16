@@ -1,34 +1,30 @@
+
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js";
 
 const container = document.getElementById("antenna-scene");
+const hero = document.getElementById("home");
+const overlay = document.getElementById("hero-radiation");
 
-if (!container) {
-  throw new Error("Container #antenna-scene not found.");
+if (!container || !hero || !overlay) {
+  throw new Error("Homepage antenna containers not found.");
 }
 
 /* =========================================
-   1. SCENE SETUP
+   1. SCENE AND CAMERA
    ========================================= */
 
 const scene = new THREE.Scene();
-
 const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200);
+
 camera.position.set(8.6, 4.6, 11.2);
 camera.lookAt(0.4, 0.2, 0);
 
-const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  alpha: true
-});
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0x000000, 0);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 container.appendChild(renderer.domElement);
-
-/* =========================================
-   2. LIGHTING
-   ========================================= */
 
 scene.add(new THREE.AmbientLight(0xaec3dd, 2.1));
 
@@ -45,7 +41,7 @@ rimLight.position.set(-8, 4, -5);
 scene.add(rimLight);
 
 /* =========================================
-   3. MATERIALS
+   2. MATERIALS AND HELPERS
    ========================================= */
 
 const silver = new THREE.MeshStandardMaterial({
@@ -75,298 +71,299 @@ const graphite = new THREE.MeshStandardMaterial({
 const orangeGlow = new THREE.MeshStandardMaterial({
   color: 0xff8d4d,
   emissive: 0xff6323,
-  emissiveIntensity: 2.2,
-  metalness: 0.15,
-  roughness: 0.3
+  emissiveIntensity: 2.2
 });
-
-const waveMaterialA = new THREE.MeshBasicMaterial({
-  color: 0x5aa2ff,
-  transparent: true,
-  opacity: 0.35
-});
-
-const waveMaterialB = new THREE.MeshBasicMaterial({
-  color: 0xff8748,
-  transparent: true,
-  opacity: 0.45
-});
-
-/* =========================================
-   4. ROOT GROUP
-   ========================================= */
 
 const antenna = new THREE.Group();
 scene.add(antenna);
 
-/* =========================================
-   5. HELPERS
-   ========================================= */
-
-function rod(start, end, radius, material, radialSegments = 16) {
+function rod(start, end, radius, material, segments = 12) {
   const a = new THREE.Vector3(...start);
   const b = new THREE.Vector3(...end);
-  const direction = new THREE.Vector3().subVectors(b, a);
-  const length = direction.length();
+  const direction = b.clone().sub(a);
 
-  const geometry = new THREE.CylinderGeometry(
-    radius,
-    radius,
-    length,
-    radialSegments
+  const mesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius, radius, direction.length(), segments),
+    material
   );
 
-  const mesh = new THREE.Mesh(geometry, material);
   mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+  antenna.add(mesh);
 
-  mesh.quaternion.setFromUnitVectors(
-    new THREE.Vector3(0, 1, 0),
-    direction.clone().normalize()
-  );
+  return mesh;
+}
 
+function box(size, position, material) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
+  mesh.position.set(...position);
   antenna.add(mesh);
   return mesh;
 }
 
 function sphere(position, radius, material) {
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(radius, 20, 20),
-    material
-  );
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 20, 20), material);
   mesh.position.set(...position);
-  antenna.add(mesh);
-  return mesh;
-}
-
-function box(size, position, material) {
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(size[0], size[1], size[2]),
-    material
-  );
-  mesh.position.set(...position);
-  antenna.add(mesh);
-  return mesh;
-}
-
-function torus(position, radius, tube, rotation, material) {
-  const mesh = new THREE.Mesh(
-    new THREE.TorusGeometry(radius, tube, 18, 80),
-    material
-  );
-  mesh.position.set(...position);
-  mesh.rotation.set(...rotation);
-  antenna.add(mesh);
-  return mesh;
-}
-
-function tubeFromCurve(curve, radius, material, tubularSegments = 120) {
-  const geometry = new THREE.TubeGeometry(curve, tubularSegments, radius, 10, false);
-  const mesh = new THREE.Mesh(geometry, material);
   antenna.add(mesh);
   return mesh;
 }
 
 /* =========================================
-   6. STRUCTURE
+   3. ANTENNA GEOMETRY
    ========================================= */
 
-/* Mast */
+// Mast, booms and mounting hub
 rod([0, -2.8, -0.1], [0, -0.15, -0.1], 0.12, darkMetal, 18);
 rod([0, -3.35, -0.1], [0, -2.8, -0.1], 0.18, graphite, 18);
 
-/* Main boom */
 rod([-0.1, 0.1, -3.6], [0.35, 0.25, 3.2], 0.075, darkMetal, 18);
+rod([-0.08, -0.12, -3.45], [0.32, 0.02, 3.0], 0.04, silverSoft);
 
-/* Secondary boom for structural richness */
-rod([-0.08, -0.12, -3.45], [0.32, 0.02, 3.0], 0.04, silverSoft, 14);
-
-/* Mount / hub */
 box([0.55, 0.34, 0.52], [0.03, -0.08, -0.05], graphite);
 sphere([0.15, 0.03, 0.4], 0.06, orangeGlow);
 
-/* Support braces */
-rod([0, -1.55, -0.1], [0.18, 0.08, 0.95], 0.03, silverSoft, 12);
-rod([0, -1.55, -0.1], [0.18, 0.08, -1.05], 0.03, silverSoft, 12);
-rod([0, -1.2, -0.1], [0.21, 0.12, 2.0], 0.026, silverSoft, 12);
-rod([0, -1.2, -0.1], [0.14, 0.02, -2.0], 0.026, silverSoft, 12);
+// Structural braces
+for (const z of [-1.05, 0.95]) {
+  rod([0, -1.55, -0.1], [0.18, 0.08, z], 0.03, silverSoft);
+}
 
-/* Small clamps along boom */
+rod([0, -1.2, -0.1], [0.21, 0.12, 2], 0.026, silverSoft);
+rod([0, -1.2, -0.1], [0.14, 0.02, -2], 0.026, silverSoft);
+
 for (let z = -2.6; z <= 2.4; z += 0.72) {
   box([0.12, 0.08, 0.08], [0.12, 0.15, z], graphite);
 }
 
-/* =========================================
-   7. REFLECTOR GRID
-   ========================================= */
-
+// Reflector at -Z; directors point toward +Z
 const reflectorZ = -3.0;
 const reflectorW = 1.65;
 const reflectorH = 1.9;
 
-/* Frame */
-rod([-reflectorW / 2, -reflectorH / 2, reflectorZ], [reflectorW / 2, -reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
-rod([-reflectorW / 2, reflectorH / 2, reflectorZ], [reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
-rod([-reflectorW / 2, -reflectorH / 2, reflectorZ], [-reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
-rod([reflectorW / 2, -reflectorH / 2, reflectorZ], [reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
+rod([-reflectorW / 2, -reflectorH / 2, reflectorZ], [reflectorW / 2, -reflectorH / 2, reflectorZ], 0.022, silverSoft);
+rod([-reflectorW / 2, reflectorH / 2, reflectorZ], [reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft);
+rod([-reflectorW / 2, -reflectorH / 2, reflectorZ], [-reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft);
+rod([reflectorW / 2, -reflectorH / 2, reflectorZ], [reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft);
 
-/* Mesh lines */
 for (let x = -0.65; x <= 0.65; x += 0.18) {
   rod([x, -0.88, reflectorZ], [x, 0.88, reflectorZ], 0.008, silver, 8);
 }
+
 for (let y = -0.72; y <= 0.72; y += 0.18) {
   rod([-0.72, y, reflectorZ], [0.72, y, reflectorZ], 0.008, silver, 8);
 }
 
-/* Reflector supports */
-rod([0.05, 0.1, -2.2], [-0.62, 0.7, reflectorZ], 0.02, silverSoft, 10);
-rod([0.05, 0.1, -2.2], [-0.62, -0.7, reflectorZ], 0.02, silverSoft, 10);
-rod([0.05, 0.1, -2.2], [0.62, 0.7, reflectorZ], 0.02, silverSoft, 10);
-rod([0.05, 0.1, -2.2], [0.62, -0.7, reflectorZ], 0.02, silverSoft, 10);
+for (const x of [-0.62, 0.62]) {
+  for (const y of [-0.7, 0.7]) {
+    rod([0.05, 0.1, -2.2], [x, y, reflectorZ], 0.02, silverSoft);
+  }
+}
 
-/* =========================================
-   8. DRIVEN ELEMENT
-   ========================================= */
-
+// Simplified driven element
 const feedZ = -1.95;
 
-/* Folded dipole look */
-torus([0.12, 0.15, feedZ], 0.42, 0.018, [Math.PI / 2, 0, 0], silver);
-rod([-0.42, 0.15, feedZ], [-0.18, 0.15, feedZ], 0.018, silver, 10);
-rod([0.42, 0.15, feedZ], [0.18, 0.15, feedZ], 0.018, silver, 10);
+const folded = new THREE.Mesh(
+  new THREE.TorusGeometry(0.42, 0.018, 18, 80),
+  silver
+);
 
-/* Cross-polarized inner element */
-rod([-0.35, 0.15, feedZ], [0.35, 0.15, feedZ], 0.016, silverSoft, 10);
-rod([0.12, -0.2, feedZ], [0.12, 0.5, feedZ], 0.016, silverSoft, 10);
+folded.position.set(0.12, 0.15, feedZ);
+folded.rotation.x = Math.PI / 2;
+antenna.add(folded);
 
-/* Feed detail */
+rod([-0.42, 0.15, feedZ], [-0.18, 0.15, feedZ], 0.018, silver);
+rod([0.42, 0.15, feedZ], [0.18, 0.15, feedZ], 0.018, silver);
+rod([-0.35, 0.15, feedZ], [0.35, 0.15, feedZ], 0.016, silverSoft);
+rod([0.12, -0.2, feedZ], [0.12, 0.5, feedZ], 0.016, silverSoft);
+
 sphere([0.12, 0.15, feedZ], 0.045, orangeGlow);
 rod([0.12, -0.05, feedZ], [0.02, -0.48, -1.45], 0.012, orangeGlow, 8);
 
-/* =========================================
-   9. DIRECTORS
-   ========================================= */
+// Crossed director elements
+for (let i = 0; i < 14; i++) {
+  const z = -1.35 + i * 0.34;
+  const lengthX = 1.08 - i * 0.03;
+  const lengthY = 1.18 - i * 0.035;
 
-function addDirector(z, lengthX, lengthY, thickness = 0.018) {
-  rod([-lengthX / 2, 0.15, z], [lengthX / 2, 0.15, z], thickness, silver, 10);
-  rod([0.12, -lengthY / 2, z], [0.12, lengthY / 2, z], thickness, silver, 10);
+  rod([-lengthX / 2, 0.15, z], [lengthX / 2, 0.15, z], i < 4 ? 0.02 : 0.017, silver, 10);
+  rod([0.12, -lengthY / 2, z], [0.12, lengthY / 2, z], i < 4 ? 0.02 : 0.017, silver, 10);
+
   box([0.08, 0.06, 0.06], [0.12, 0.15, z], graphite);
 }
 
-/* First directors, slightly larger */
-let z = -1.35;
-let lenX = 1.08;
-let lenY = 1.18;
-
-for (let i = 0; i < 14; i++) {
-  addDirector(z, lenX, lenY, i < 4 ? 0.02 : 0.017);
-  z += 0.34;
-  lenX -= 0.03;
-  lenY -= 0.035;
-}
-
-/* Extra front parasitic tips for a richer silhouette */
 for (let i = 0; i < 3; i++) {
-  const frontZ = 3.0 + i * 0.26;
-  rod([-0.24 + i * 0.01, 0.15, frontZ], [0.48 - i * 0.02, 0.15, frontZ], 0.012, silverSoft, 8);
-  rod([0.12, -0.28 + i * 0.01, frontZ], [0.12, 0.42 - i * 0.02, frontZ], 0.012, silverSoft, 8);
+  const z = 3 + i * 0.26;
+
+  rod([-0.24 + i * 0.01, 0.15, z], [0.48 - i * 0.02, 0.15, z], 0.012, silverSoft, 8);
+  rod([0.12, -0.28 + i * 0.01, z], [0.12, 0.42 - i * 0.02, z], 0.012, silverSoft, 8);
 }
-
-
-/* =========================================
-   10. DIRECTIONAL RADIATION FIELD
-   ========================================= */
-
-// Radiation follows the antenna's local coordinate system.
-const radiation = new THREE.Group();
-radiation.position.set(0.12, 0.15, feedZ);
-antenna.add(radiation);
-
-const wavefronts = [];
-const waveColors = [0xff6835, 0xff8749, 0xffad69];
-
-// Approximate directional radiation pattern.
-// Main lobe points toward the directors (+Z).
-function radiationPattern(theta) {
-  const c = Math.cos(theta);
-  const main = Math.pow(Math.max(0, c), 6);
-  const side = 0.085 * Math.pow(Math.sin(4 * theta), 2) * Math.pow(Math.sin(theta), 2);
-  const back = 0.045 * Math.pow(Math.max(0, -c), 4);
-
-  return 0.025 + main + side + back;
-}
-
-// Point on the three-dimensional radiation envelope.
-function fieldPoint(theta, phi) {
-  const radius = radiationPattern(theta);
-  const x = radius * Math.sin(theta) * Math.cos(phi);
-  const y = radius * Math.sin(theta) * Math.sin(phi);
-  const z = radius * Math.cos(theta);
-
-  return new THREE.Vector3(x, y, z);
-}
-
-// Build a thin electromagnetic field line.
-function fieldLine(points, material) {
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-  return new THREE.Line(geometry, material);
-}
-
-// Multiple wavefronts propagate outward continuously.
-for (let i = 0; i < 12; i++) {
-  const shell = new THREE.Group();
-
-  const material = new THREE.LineBasicMaterial({
-    color: waveColors[i % waveColors.length],
-    transparent: true,
-    opacity: 0.4,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
-  });
-
-  // Meridians reveal the directional lobe geometry.
-  for (let j = 0; j < 16; j++) {
-    const phi = (j / 16) * Math.PI * 2;
-
-    const points = Array.from({ length: 100 }, (_, k) => {
-      const theta = (k / 99) * Math.PI;
-      return fieldPoint(theta, phi);
-    });
-
-    shell.add(fieldLine(points, material));
-  }
-
-  // Wavefront contours add density and depth.
-  const contours = [0.16, 0.3, 0.45, 0.65, 0.85, 1.1, 1.4, 2.65];
-
-  for (const theta of contours) {
-    const points = Array.from({ length: 121 }, (_, k) => {
-      const phi = (k / 120) * Math.PI * 2;
-      return fieldPoint(theta, phi);
-    });
-
-    shell.add(fieldLine(points, material));
-  }
-
-  radiation.add(shell);
-  wavefronts.push({ shell, material, offset: i / 12 });
-}
-
-
-
-
-
-/* =========================================
-   11. ORIENTATION
-   ========================================= */
 
 antenna.rotation.y = -0.78;
 antenna.rotation.x = -0.08;
 antenna.position.set(0.15, -0.2, 0);
 antenna.scale.setScalar(0.96);
 
+/* =========================================
+   4. QUALITATIVE YAGI RADIATION PATTERN
+   ========================================= */
+
+// Shared angular envelope for 3D and SVG wavefronts.
+// Illustrative directional pattern, not an EM simulation.
+
+function radiationPattern(theta) {
+  const main = 0.94 * Math.exp(-0.5 * (theta / 0.55) ** 2);
+  const side1 = 0.095 * Math.exp(-0.5 * ((theta - 1.18) / 0.20) ** 2);
+  const side2 = 0.045 * Math.exp(-0.5 * ((theta - 1.92) / 0.18) ** 2);
+  const back = 0.065 * Math.exp(-0.5 * ((theta - Math.PI) / 0.31) ** 2);
+
+  return 0.018 + main + side1 + side2 + back;
+}
+
+function envelopePoint(theta, phi) {
+  const r = radiationPattern(theta);
+
+  return new THREE.Vector3(
+    r * Math.sin(theta) * Math.cos(phi),
+    r * Math.sin(theta) * Math.sin(phi),
+    r * Math.cos(theta)
+  );
+}
+
+const radiation = new THREE.Group();
+radiation.position.set(0.12, 0.15, feedZ);
+antenna.add(radiation);
+
+const nearWavefronts = [];
+
+// Subtle 3D wavefronts surrounding the antenna
+for (let i = 0; i < 5; i++) {
+  const group = new THREE.Group();
+
+  const material = new THREE.LineBasicMaterial({
+    color: i % 2 ? 0xff8a48 : 0xff6434,
+    transparent: true,
+    opacity: 0.08,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  for (let meridian = 0; meridian < 9; meridian++) {
+    const phi = meridian * Math.PI / 9;
+
+    const points = Array.from({ length: 95 }, (_, k) => {
+      return envelopePoint(k * Math.PI / 94, phi);
+    });
+
+    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+  }
+
+  for (const theta of [0.25, 0.47, 0.72, 1.15, 1.9, 2.85]) {
+    const points = Array.from({ length: 97 }, (_, k) => {
+      return envelopePoint(theta, k * Math.PI * 2 / 96);
+    });
+
+    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+  }
+
+  radiation.add(group);
+  nearWavefronts.push({ group, material, offset: i / 5 });
+}
 
 /* =========================================
-   12. DRAG-TO-ROTATE INTERACTION
+   5. FULL-HERO SVG WAVEFRONTS
+   ========================================= */
+
+const svgNS = "http://www.w3.org/2000/svg";
+const heroWavefronts = [];
+
+for (let i = 0; i < 22; i++) {
+  const path = document.createElementNS(svgNS, "path");
+
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", i % 4 === 0 ? "#ffa064" : i % 3 === 0 ? "#ff8846" : "#ff6735");
+  path.setAttribute("stroke-width", i % 4 === 0 ? "1.25" : "0.8");
+  path.setAttribute("vector-effect", "non-scaling-stroke");
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("opacity", "0");
+
+  overlay.appendChild(path);
+  heroWavefronts.push({ path, offset: i / 22 });
+}
+
+// Convert 3D world coordinates into coordinates relative to the hero section.
+function projectToHero(worldPoint, canvasRect, heroRect) {
+  const p = worldPoint.clone().project(camera);
+
+  return {
+    x: canvasRect.left - heroRect.left + (p.x + 1) * canvasRect.width / 2,
+    y: canvasRect.top - heroRect.top + (1 - p.y) * canvasRect.height / 2
+  };
+}
+
+let previousDirection = { x: -1, y: 0 };
+let overlaySize = "";
+
+function updateHeroRadiation(time, reduceMotion) {
+  const heroRect = hero.getBoundingClientRect();
+  const canvasRect = renderer.domElement.getBoundingClientRect();
+
+  if (heroRect.width < 1 || heroRect.height < 1 || canvasRect.width < 1) return;
+
+  const size = `${heroRect.width} ${heroRect.height}`;
+
+  if (size !== overlaySize) {
+    overlay.setAttribute("viewBox", `0 0 ${size}`);
+    overlaySize = size;
+  }
+
+  // Feed position and direction of the directors (+Z).
+  antenna.updateMatrixWorld(true);
+
+  const feed = antenna.localToWorld(new THREE.Vector3(0.12, 0.15, feedZ));
+  const ahead = antenna.localToWorld(new THREE.Vector3(0.12, 0.15, feedZ + 2));
+
+  const origin = projectToHero(feed, canvasRect, heroRect);
+  const front = projectToHero(ahead, canvasRect, heroRect);
+
+  const dx = front.x - origin.x;
+  const dy = front.y - origin.y;
+  const magnitude = Math.hypot(dx, dy);
+
+  if (magnitude > 4) {
+    previousDirection = { x: dx / magnitude, y: dy / magnitude };
+  }
+
+  const direction = previousDirection;
+  const perpendicular = { x: -direction.y, y: direction.x };
+  const maxRadius = Math.max(heroRect.width, heroRect.height) * 1.7;
+
+  // Expand closed contours following the same directional gain envelope.
+  for (const wave of heroWavefronts) {
+    const progress = reduceMotion ? wave.offset : (wave.offset + time * 0.10) % 1;
+    const distance = 18 + progress * maxRadius;
+    const fade = Math.pow(Math.sin(Math.PI * progress), 1.25);
+    const segments = [];
+
+    for (let j = 0; j <= 180; j++) {
+      const angle = -Math.PI + j * (2 * Math.PI / 180);
+      const theta = Math.acos(Math.cos(angle));
+      const r = distance * radiationPattern(theta);
+
+      const parallel = Math.cos(angle) * r;
+      const lateral = Math.sin(angle) * r;
+
+      const x = origin.x + direction.x * parallel + perpendicular.x * lateral;
+      const y = origin.y + direction.y * parallel + perpendicular.y * lateral;
+
+      segments.push(`${j === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`);
+    }
+
+    wave.path.setAttribute("d", segments.join(" ") + " Z");
+    wave.path.setAttribute("opacity", (reduceMotion ? 0.10 : 0.36 * fade).toFixed(3));
+  }
+}
+
+/* =========================================
+   6. DRAG TO ROTATE
    ========================================= */
 
 const canvas = renderer.domElement;
@@ -376,11 +373,9 @@ const pointer = new THREE.Vector2();
 let isDragging = false;
 let previousX = 0;
 let previousY = 0;
-
 let targetRotationX = antenna.rotation.x;
 let targetRotationY = antenna.rotation.y;
 
-// Invisible interaction area around the antenna
 const hitbox = new THREE.Mesh(
   new THREE.BoxGeometry(4.2, 5.2, 10.5),
   new THREE.MeshBasicMaterial({
@@ -397,18 +392,16 @@ antenna.add(hitbox);
 canvas.style.cursor = "grab";
 canvas.style.touchAction = "none";
 
-// Start rotating only when clicking the antenna
 canvas.addEventListener("pointerdown", (event) => {
   if (event.pointerType === "mouse" && event.button !== 0) return;
 
   const rect = canvas.getBoundingClientRect();
 
-  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  pointer.x = 2 * (event.clientX - rect.left) / rect.width - 1;
+  pointer.y = 1 - 2 * (event.clientY - rect.top) / rect.height;
 
   raycaster.setFromCamera(pointer, camera);
-
-  if (raycaster.intersectObject(hitbox).length === 0) return;
+  if (!raycaster.intersectObject(hitbox).length) return;
 
   isDragging = true;
   previousX = event.clientX;
@@ -418,22 +411,16 @@ canvas.addEventListener("pointerdown", (event) => {
   canvas.style.cursor = "grabbing";
 });
 
-// Rotate while dragging
 canvas.addEventListener("pointermove", (event) => {
   if (!isDragging) return;
 
-  const deltaX = event.clientX - previousX;
-  const deltaY = event.clientY - previousY;
-
-  targetRotationY += deltaX * 0.006;
-
-  targetRotationX = THREE.MathUtils.clamp(targetRotationX + deltaY * 0.005, -0.55, 0.55);
+  targetRotationY += (event.clientX - previousX) * 0.006;
+  targetRotationX = THREE.MathUtils.clamp(targetRotationX + (event.clientY - previousY) * 0.005, -0.55, 0.55);
 
   previousX = event.clientX;
   previousY = event.clientY;
 });
 
-// Stop rotating when released
 function stopDragging(event) {
   isDragging = false;
   canvas.style.cursor = "grab";
@@ -445,32 +432,29 @@ function stopDragging(event) {
 
 canvas.addEventListener("pointerup", stopDragging);
 canvas.addEventListener("pointercancel", stopDragging);
+
 canvas.addEventListener("lostpointercapture", () => {
   isDragging = false;
   canvas.style.cursor = "grab";
 });
 
-
 /* =========================================
-   13. RESIZE
+   7. RESIZE AND ANIMATION
    ========================================= */
 
 function resize() {
   const width = container.clientWidth;
   const height = container.clientHeight;
 
+  if (width < 1 || height < 1) return;
+
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
-
   renderer.setSize(width, height);
 }
 
 window.addEventListener("resize", resize);
 resize();
-
-/* =========================================
-   14. ANIMATION
-   ========================================= */
 
 const clock = new THREE.Clock();
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -478,20 +462,22 @@ const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").match
 function animate() {
   requestAnimationFrame(animate);
 
-  const t = clock.getElapsedTime();
+  const time = clock.getElapsedTime();
 
-  // Smooth drag-to-rotate interaction
+  // Smooth antenna rotation
   antenna.rotation.y = THREE.MathUtils.lerp(antenna.rotation.y, targetRotationY, reduceMotion ? 1 : 0.12);
   antenna.rotation.x = THREE.MathUtils.lerp(antenna.rotation.x, targetRotationX, reduceMotion ? 1 : 0.12);
 
-  // Expanding directional wavefronts
-  for (const { shell, material, offset } of wavefronts) {
-    const progress = reduceMotion ? offset : (offset + t * 0.12) % 1;
-    const distance = 0.25 + progress * 10.5;
+  // Subtle local 3D radiation
+  for (const wave of nearWavefronts) {
+    const progress = reduceMotion ? wave.offset : (wave.offset + time * 0.14) % 1;
 
-    shell.scale.setScalar(distance);
-    material.opacity = reduceMotion ? 0.16 : 0.52 * Math.sin(Math.PI * progress);
+    wave.group.scale.setScalar(0.7 + progress * 6.0);
+    wave.material.opacity = reduceMotion ? 0.035 : 0.12 * Math.sin(Math.PI * progress);
   }
+
+  // Full-home directional radiation
+  updateHeroRadiation(time, reduceMotion);
 
   renderer.render(scene, camera);
 }
