@@ -128,15 +128,18 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 3px;
       flex-shrink: 0;
     }
 
-    .nav-links a {
-      padding: 11px 14px;
-      font-size: 0.88rem;
+    .nav-links a,
+    .nav-links .nav-pending {
+      display: inline-block;
+      padding: 11px 12px;
+      font-size: 0.85rem;
       font-weight: 600;
       color: var(--muted);
+      white-space: nowrap;
       transition: color 0.2s ease, background 0.2s ease;
     }
 
@@ -150,6 +153,11 @@
       border: 1px solid var(--border);
     }
 
+    .nav-links .nav-pending {
+      opacity: 0.65;
+      cursor: default;
+    }
+
     /* =========================================
        3. HERO SECTION
        ========================================= */
@@ -157,25 +165,16 @@
     .hero {
       min-height: calc(100svh - 190px);
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
       align-items: center;
-      gap: 32px;
-      padding: 64px 0;
+      gap: 24px;
+      padding: 54px 0;
     }
 
     .hero-text {
       border-left: 1px solid rgba(196, 211, 232, 0.55);
-      padding: 75px 0 75px 30px;
+      padding: 54px 0 54px 30px;
       min-width: 0;
-    }
-
-    .eyebrow {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #89afc8;
-      margin-bottom: 24px;
     }
 
     h1 {
@@ -192,15 +191,19 @@
       font-style: italic;
       color: #d5deeb;
       max-width: 540px;
-      margin-bottom: 24px;
+      margin-bottom: 30px;
     }
 
     .intro {
-      font-size: 1rem;
-      line-height: 1.85;
+      max-width: 505px;
+      font-size: 0.98rem;
+      line-height: 1.78;
       color: var(--muted);
-      max-width: 490px;
-      margin-bottom: 32px;
+      margin-bottom: 34px;
+    }
+
+    .intro p + p {
+      margin-top: 16px;
     }
 
     /* =========================================
@@ -264,8 +267,7 @@
     .visual-wrap {
       position: relative;
       width: 100%;
-      height: min(65vh, 600px);
-      min-height: 450px;
+      height: clamp(480px, 70vh, 680px);
       overflow: hidden;
     }
 
@@ -320,7 +322,7 @@
        7. RESPONSIVE DESIGN
        ========================================= */
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1150px) {
       .navbar {
         flex-wrap: wrap;
       }
@@ -342,9 +344,8 @@
       }
 
       .visual-wrap {
-        max-width: 650px;
-        height: 440px;
-        min-height: 0;
+        max-width: 700px;
+        height: 480px;
       }
     }
 
@@ -377,7 +378,8 @@
         gap: 2px;
       }
 
-      .nav-links a {
+      .nav-links a,
+      .nav-links .nav-pending {
         padding: 9px 10px;
         font-size: 0.78rem;
       }
@@ -394,8 +396,12 @@
         padding-left: 20px;
       }
 
+      .intro {
+        font-size: 0.95rem;
+      }
+
       .visual-wrap {
-        height: 340px;
+        height: 380px;
       }
 
       .academic-strip {
@@ -429,9 +435,9 @@
 
 <body>
 
-  <!-- =======================================
+  <!-- =========================================
        NAVIGATION
-       ======================================= -->
+       ========================================= -->
 
   <header class="site-header container">
     <nav class="navbar" aria-label="Main navigation">
@@ -454,23 +460,23 @@
         <a href="#hands-on">Hands-on</a>
         <a href="#about">About</a>
         <a href="#writing">Writing</a>
+        <span class="nav-pending" aria-label="Resume, not yet available">Resume</span>
         <a href="mailto:desouz78@rowan.edu">Contact</a>
       </div>
 
     </nav>
   </header>
 
-  <!-- =======================================
+  <!-- =========================================
        MAIN CONTENT
-       ======================================= -->
+       ========================================= -->
 
   <main class="container">
 
-    <!-- Hero Section -->
+    <!-- Homepage -->
     <section class="hero" id="home">
 
       <div class="hero-text">
-        <p class="eyebrow">PhD Research Portfolio</p>
 
         <h1>Luciano Stork</h1>
 
@@ -478,17 +484,31 @@
           Close to discovering something I still cannot name.
         </p>
 
-        <p class="intro">
-          I am a PhD researcher interested in telecommunications,
-          signal processing, wireless sensing, and the systems that
-          allow invisible phenomena to become measurable,
-          interpretable, and useful.
-        </p>
+        <div class="intro">
+          <p>
+            Most people think of wireless signals as a way to communicate.
+            I can't help wondering what else they can tell us.
+          </p>
+
+          <p>
+            I'm Luciano, a Brazilian telecommunications engineer and PhD
+            student in Computer Science at Rowan University. Somewhere
+            between electromagnetic waves, signal processing, and wireless
+            sensing, I find myself chasing questions that often lead to
+            more questions than answers.
+          </p>
+
+          <p>
+            This is where I share some of them, along with the experiments,
+            ideas, and occasional surprises along the way.
+          </p>
+        </div>
 
         <div class="buttons">
           <a href="#hands-on" class="btn btn-primary">Explore Hands-on</a>
           <a href="#writing" class="btn btn-secondary">Read My Writing</a>
         </div>
+
       </div>
 
       <!-- Interactive 3D Antenna -->
@@ -525,10 +545,7 @@
 
   </main>
 
-  <!-- =======================================
-       THREE.JS ANTENNA MODULE
-       ======================================= -->
-
+  <!-- Interactive 3D Antenna -->
   <script type="module" src="./js/antenna.js?v=4"></script>
 
 </body>
