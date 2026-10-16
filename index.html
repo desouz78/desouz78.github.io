@@ -265,10 +265,10 @@
     }
 
     .visual-wrap {
-    position: relative;
-    width: 100%;
-    height: clamp(520px, 74vh, 720px);
-    overflow: hidden;
+      position: relative;
+      width: 100%;
+      height: clamp(520px, 74vh, 720px);
+      overflow: hidden;
     }
 
     #antenna-scene canvas {
@@ -316,6 +316,18 @@
       color: #d5deeb;
       font-size: 0.92rem;
       line-height: 1.6;
+    }
+
+    .academic-value a {
+      color: var(--text);
+      text-decoration: underline;
+      text-decoration-color: var(--border);
+      text-underline-offset: 4px;
+      transition: text-decoration-color 0.2s ease;
+    }
+
+    .academic-value a:hover {
+      text-decoration-color: var(--text);
     }
 
     /* =========================================
@@ -538,7 +550,10 @@
 
       <div class="academic-item">
         <span class="academic-label">Background</span>
-        <span class="academic-value">Telecommunications Engineering</span>
+        <span class="academic-value">
+          Telecommunications Engineering |
+          <a href="https://www.ufsj.edu.br/" target="_blank" rel="noopener noreferrer">UFSJ ↗</a>
+        </span>
       </div>
 
     </section>
