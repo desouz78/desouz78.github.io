@@ -271,45 +271,89 @@ for (let i = 0; i < 3; i++) {
   rod([0.12, -0.28 + i * 0.01, frontZ], [0.12, 0.42 - i * 0.02, frontZ], 0.012, silverSoft, 8);
 }
 
+
 /* =========================================
-   10. DECORATIVE FIELD LINES
+   10. DIRECTIONAL RADIATION FIELD
    ========================================= */
 
-function createWaveCurve(offsetY, amplitude, length, phase = 0) {
-  return new THREE.CatmullRomCurve3(
-    Array.from({ length: 48 }, (_, i) => {
-      const t = i / 47;
-      const z = -1.6 + t * length;
-      const x = 0.9 + Math.sin(t * Math.PI * 2 + phase) * amplitude;
-      const y = offsetY + Math.sin(t * Math.PI * 4 + phase) * 0.06;
-      return new THREE.Vector3(x, y, z);
-    })
-  );
+// Radiation follows the antenna's local coordinate system.
+const radiation = new THREE.Group();
+radiation.position.set(0.12, 0.15, feedZ);
+antenna.add(radiation);
+
+const wavefronts = [];
+const waveColors = [0xff6835, 0xff8749, 0xffad69];
+
+// Approximate directional radiation pattern.
+// Main lobe points toward the directors (+Z).
+function radiationPattern(theta) {
+  const c = Math.cos(theta);
+  const main = Math.pow(Math.max(0, c), 6);
+  const side = 0.085 * Math.pow(Math.sin(4 * theta), 2) * Math.pow(Math.sin(theta), 2);
+  const back = 0.045 * Math.pow(Math.max(0, -c), 4);
+
+  return 0.025 + main + side + back;
 }
 
-const wave1 = tubeFromCurve(createWaveCurve(0.62, 0.18, 4.6, 0), 0.012, waveMaterialA, 160);
-const wave2 = tubeFromCurve(createWaveCurve(0.28, 0.14, 4.6, 1.4), 0.010, waveMaterialB, 160);
-const wave3 = tubeFromCurve(createWaveCurve(-0.08, 0.12, 4.6, 2.2), 0.008, waveMaterialA, 160);
+// Point on the three-dimensional radiation envelope.
+function fieldPoint(theta, phi) {
+  const radius = radiationPattern(theta);
+  const x = radius * Math.sin(theta) * Math.cos(phi);
+  const y = radius * Math.sin(theta) * Math.sin(phi);
+  const z = radius * Math.cos(theta);
 
-wave1.position.x += 0.18;
-wave2.position.x += 0.26;
-wave3.position.x += 0.34;
-
-/* Concentric wave rings near feed */
-const ringGroup = new THREE.Group();
-antenna.add(ringGroup);
-
-for (let i = 0; i < 4; i++) {
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(0.18 + i * 0.1, 0.006, 10, 80),
-    i % 2 === 0 ? waveMaterialB.clone() : waveMaterialA.clone()
-  );
-  ring.position.set(0.15, 0.15, feedZ + 0.04);
-  ring.rotation.set(Math.PI / 2, 0, 0);
-  ring.userData.baseScale = 1 + i * 0.12;
-  ring.scale.setScalar(ring.userData.baseScale);
-  ringGroup.add(ring);
+  return new THREE.Vector3(x, y, z);
 }
+
+// Build a thin electromagnetic field line.
+function fieldLine(points, material) {
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  return new THREE.Line(geometry, material);
+}
+
+// Multiple wavefronts propagate outward continuously.
+for (let i = 0; i < 12; i++) {
+  const shell = new THREE.Group();
+
+  const material = new THREE.LineBasicMaterial({
+    color: waveColors[i % waveColors.length],
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  // Meridians reveal the directional lobe geometry.
+  for (let j = 0; j < 16; j++) {
+    const phi = (j / 16) * Math.PI * 2;
+
+    const points = Array.from({ length: 100 }, (_, k) => {
+      const theta = (k / 99) * Math.PI;
+      return fieldPoint(theta, phi);
+    });
+
+    shell.add(fieldLine(points, material));
+  }
+
+  // Wavefront contours add density and depth.
+  const contours = [0.16, 0.3, 0.45, 0.65, 0.85, 1.1, 1.4, 2.65];
+
+  for (const theta of contours) {
+    const points = Array.from({ length: 121 }, (_, k) => {
+      const phi = (k / 120) * Math.PI * 2;
+      return fieldPoint(theta, phi);
+    });
+
+    shell.add(fieldLine(points, material));
+  }
+
+  radiation.add(shell);
+  wavefronts.push({ shell, material, offset: i / 12 });
+}
+
+
+
+
 
 /* =========================================
    11. ORIENTATION
@@ -424,41 +468,82 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
+
 /* =========================================
-   14. ANIMATION
+   10. DIRECTIONAL RADIATION FIELD
    ========================================= */
 
-const clock = new THREE.Clock();
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Radiation follows the antenna's local coordinate system.
+const radiation = new THREE.Group();
+radiation.position.set(0.12, 0.15, feedZ);
+antenna.add(radiation);
 
-function animate() {
-  requestAnimationFrame(animate);
+const wavefronts = [];
+const waveColors = [0xff6835, 0xff8749, 0xffad69];
 
-  const t = clock.getElapsedTime();
+// Approximate directional radiation pattern.
+// Main lobe points toward the directors (+Z).
+function radiationPattern(theta) {
+  const c = Math.cos(theta);
+  const main = Math.pow(Math.max(0, c), 6);
+  const side = 0.085 * Math.pow(Math.sin(4 * theta), 2) * Math.pow(Math.sin(theta), 2);
+  const back = 0.045 * Math.pow(Math.max(0, -c), 4);
 
-  antenna.rotation.y = THREE.MathUtils.lerp(antenna.rotation.y, targetRotationY, reduceMotion ? 1 : 0.12);
-
-  antenna.rotation.x = THREE.MathUtils.lerp(antenna.rotation.x, targetRotationX, reduceMotion ? 1 : 0.12);
-
-  if (!reduceMotion) {
-
-    wave1.material.opacity = 0.24 + Math.sin(t * 1.8) * 0.08;
-    wave2.material.opacity = 0.28 + Math.sin(t * 2.1 + 1.0) * 0.10;
-    wave3.material.opacity = 0.18 + Math.sin(t * 1.6 + 2.1) * 0.07;
-
-    wave1.position.z = Math.sin(t * 1.2) * 0.04;
-    wave2.position.z = Math.sin(t * 1.4 + 1.2) * 0.05;
-    wave3.position.z = Math.sin(t * 1.1 + 2.0) * 0.03;
-
-    ringGroup.children.forEach((ring, i) => {
-      const pulse = Math.sin(t * 2.2 - i * 0.55) * 0.18;
-      const scale = ring.userData.baseScale + pulse;
-      ring.scale.set(scale, scale, scale);
-      ring.material.opacity = 0.14 + (1 - i * 0.16) * 0.16 + pulse * 0.12;
-    });
-  }
-
-  renderer.render(scene, camera);
+  return 0.025 + main + side + back;
 }
 
-animate();
+// Point on the three-dimensional radiation envelope.
+function fieldPoint(theta, phi) {
+  const radius = radiationPattern(theta);
+  const x = radius * Math.sin(theta) * Math.cos(phi);
+  const y = radius * Math.sin(theta) * Math.sin(phi);
+  const z = radius * Math.cos(theta);
+
+  return new THREE.Vector3(x, y, z);
+}
+
+// Build a thin electromagnetic field line.
+function fieldLine(points, material) {
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  return new THREE.Line(geometry, material);
+}
+
+// Multiple wavefronts propagate outward continuously.
+for (let i = 0; i < 12; i++) {
+  const shell = new THREE.Group();
+
+  const material = new THREE.LineBasicMaterial({
+    color: waveColors[i % waveColors.length],
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  // Meridians reveal the directional lobe geometry.
+  for (let j = 0; j < 16; j++) {
+    const phi = (j / 16) * Math.PI * 2;
+
+    const points = Array.from({ length: 100 }, (_, k) => {
+      const theta = (k / 99) * Math.PI;
+      return fieldPoint(theta, phi);
+    });
+
+    shell.add(fieldLine(points, material));
+  }
+
+  // Wavefront contours add density and depth.
+  const contours = [0.16, 0.3, 0.45, 0.65, 0.85, 1.1, 1.4, 2.65];
+
+  for (const theta of contours) {
+    const points = Array.from({ length: 121 }, (_, k) => {
+      const phi = (k / 120) * Math.PI * 2;
+      return fieldPoint(theta, phi);
+    });
+
+    shell.add(fieldLine(points, material));
+  }
+
+  radiation.add(shell);
+  wavefronts.push({ shell, material, offset: i / 12 });
+}
