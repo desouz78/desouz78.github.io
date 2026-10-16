@@ -205,7 +205,7 @@ for (let i = 0; i < 3; i++) {
 }
 
 antenna.rotation.y = 0.10;
-antenna.rotation.x = -0.08;
+antenna.rotation.x = 0.05;
 antenna.position.set(0.15, -0.2, 0);
 antenna.scale.setScalar(0.96);
 
