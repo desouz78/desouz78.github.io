@@ -204,7 +204,7 @@ for (let i = 0; i < 3; i++) {
   rod([0.12, -0.28 + i * 0.01, z], [0.12, 0.42 - i * 0.02, z], 0.012, silverSoft, 8);
 }
 
-antenna.rotation.y = -0.78;
+antenna.rotation.y = 0.10;
 antenna.rotation.x = -0.08;
 antenna.position.set(0.15, -0.2, 0);
 antenna.scale.setScalar(0.96);
