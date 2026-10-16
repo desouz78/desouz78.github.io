@@ -1,13 +1,20 @@
-
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js";
 
 const container = document.getElementById("antenna-scene");
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+if (!container) {
+  throw new Error("Container #antenna-scene not found.");
+}
 
-camera.position.set(6, 3.5, 8.5);
-camera.lookAt(0, -0.15, 0);
+/* =========================================
+   1. SCENE SETUP
+   ========================================= */
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200);
+camera.position.set(8.5, 4.5, 10.5);
+camera.lookAt(0.4, 0.2, 0);
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -15,111 +22,307 @@ const renderer = new THREE.WebGLRenderer({
 });
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.setClearColor(0x000000, 0);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 container.appendChild(renderer.domElement);
 
-// Lighting
-scene.add(new THREE.AmbientLight(0xb7c8df, 1.5));
+/* =========================================
+   2. LIGHTING
+   ========================================= */
 
-const keyLight = new THREE.DirectionalLight(0xeaf3ff, 3);
-keyLight.position.set(4, 7, 6);
+scene.add(new THREE.AmbientLight(0xaec3dd, 1.6));
+
+const keyLight = new THREE.DirectionalLight(0xeaf4ff, 3.2);
+keyLight.position.set(7, 10, 8);
 scene.add(keyLight);
 
-const rimLight = new THREE.DirectionalLight(0xff884a, 2);
-rimLight.position.set(-5, 2, -4);
+const fillLight = new THREE.DirectionalLight(0x86a8cf, 1.4);
+fillLight.position.set(-6, 3, 7);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0xff8a4b, 2.4);
+rimLight.position.set(-8, 4, -5);
 scene.add(rimLight);
 
-// Materials
-const metal = new THREE.MeshStandardMaterial({
-  color: 0xb7c8d9,
-  metalness: 0.85,
+/* =========================================
+   3. MATERIALS
+   ========================================= */
+
+const silver = new THREE.MeshStandardMaterial({
+  color: 0xc5d2e1,
+  metalness: 0.9,
   roughness: 0.24
 });
 
-const darkMetal = new THREE.MeshStandardMaterial({
-  color: 0x354457,
-  metalness: 0.8,
-  roughness: 0.35
+const silverSoft = new THREE.MeshStandardMaterial({
+  color: 0xaebdd0,
+  metalness: 0.82,
+  roughness: 0.3
 });
 
-const orange = new THREE.MeshStandardMaterial({
-  color: 0xff803e,
-  emissive: 0xff6225,
-  emissiveIntensity: 1.6
+const darkMetal = new THREE.MeshStandardMaterial({
+  color: 0x2d3d50,
+  metalness: 0.82,
+  roughness: 0.42
 });
+
+const graphite = new THREE.MeshStandardMaterial({
+  color: 0x172434,
+  metalness: 0.55,
+  roughness: 0.65
+});
+
+const orangeGlow = new THREE.MeshStandardMaterial({
+  color: 0xff8d4d,
+  emissive: 0xff6323,
+  emissiveIntensity: 2.2,
+  metalness: 0.15,
+  roughness: 0.3
+});
+
+const waveMaterialA = new THREE.MeshBasicMaterial({
+  color: 0x5aa2ff,
+  transparent: true,
+  opacity: 0.35
+});
+
+const waveMaterialB = new THREE.MeshBasicMaterial({
+  color: 0xff8748,
+  transparent: true,
+  opacity: 0.45
+});
+
+/* =========================================
+   4. ROOT GROUP
+   ========================================= */
 
 const antenna = new THREE.Group();
 scene.add(antenna);
 
-// Metallic rods between two points
-function rod(start, end, radius, material) {
+/* =========================================
+   5. HELPERS
+   ========================================= */
+
+function rod(start, end, radius, material, radialSegments = 16) {
   const a = new THREE.Vector3(...start);
   const b = new THREE.Vector3(...end);
-
   const direction = new THREE.Vector3().subVectors(b, a);
+  const length = direction.length();
 
   const geometry = new THREE.CylinderGeometry(
-    radius, radius, direction.length(), 12
+    radius,
+    radius,
+    length,
+    radialSegments
   );
 
   const mesh = new THREE.Mesh(geometry, material);
-
   mesh.position.copy(a).add(b).multiplyScalar(0.5);
 
   mesh.quaternion.setFromUnitVectors(
     new THREE.Vector3(0, 1, 0),
-    direction.normalize()
+    direction.clone().normalize()
   );
 
   antenna.add(mesh);
   return mesh;
 }
 
-// Longitudinal boom
-rod([0, 0, -2.5], [0, 0, 2.0], 0.065, darkMetal);
-
-// Cross-polarized Yagi elements
-function addElements(z, length, driven = false) {
-  const half = length / 2;
-
-  if (driven) {
-    const gap = 0.055;
-
-    for (const sign of [-1, 1]) {
-      rod([sign * gap, 0, z], [sign * half, 0, z], 0.025, metal);
-      rod([0, sign * gap, z], [0, sign * half, z], 0.025, metal);
-    }
-  } else {
-    rod([-half, 0, z], [half, 0, z], 0.022, metal);
-    rod([0, -half, z], [0, half, z], 0.022, metal);
-  }
+function sphere(position, radius, material) {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 20, 20),
+    material
+  );
+  mesh.position.set(...position);
+  antenna.add(mesh);
+  return mesh;
 }
 
-// Reflector, driven elements and directors
-addElements(1.75, 2.65);
-addElements(1.25, 2.48, true);
-
-for (let i = 0; i < 11; i++) {
-  const z = 0.85 - i * 0.31;
-  const length = 2.30 - i * 0.025;
-
-  addElements(z, length);
+function box(size, position, material) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(size[0], size[1], size[2]),
+    material
+  );
+  mesh.position.set(...position);
+  antenna.add(mesh);
+  return mesh;
 }
 
-// Support mast
-rod([0, -2.25, 0.4], [0, -0.15, 0.4], 0.085, darkMetal);
+function torus(position, radius, tube, rotation, material) {
+  const mesh = new THREE.Mesh(
+    new THREE.TorusGeometry(radius, tube, 18, 80),
+    material
+  );
+  mesh.position.set(...position);
+  mesh.rotation.set(...rotation);
+  antenna.add(mesh);
+  return mesh;
+}
 
-// Feed-point highlight
-const feed = new THREE.Mesh(
-  new THREE.SphereGeometry(0.08, 16, 16),
-  orange
-);
+function tubeFromCurve(curve, radius, material, tubularSegments = 120) {
+  const geometry = new THREE.TubeGeometry(curve, tubularSegments, radius, 10, false);
+  const mesh = new THREE.Mesh(geometry, material);
+  antenna.add(mesh);
+  return mesh;
+}
 
-feed.position.set(0, 0, 1.25);
-antenna.add(feed);
+/* =========================================
+   6. STRUCTURE
+   ========================================= */
 
-// Mouse interaction
+/* Mast */
+rod([0, -2.8, -0.1], [0, -0.15, -0.1], 0.12, darkMetal, 18);
+rod([0, -3.35, -0.1], [0, -2.8, -0.1], 0.18, graphite, 18);
+
+/* Main boom */
+rod([-0.1, 0.1, -3.6], [0.35, 0.25, 3.2], 0.075, darkMetal, 18);
+
+/* Secondary boom for structural richness */
+rod([-0.08, -0.12, -3.45], [0.32, 0.02, 3.0], 0.04, silverSoft, 14);
+
+/* Mount / hub */
+box([0.55, 0.34, 0.52], [0.03, -0.08, -0.05], graphite);
+sphere([0.15, 0.03, 0.4], 0.06, orangeGlow);
+
+/* Support braces */
+rod([0, -1.55, -0.1], [0.18, 0.08, 0.95], 0.03, silverSoft, 12);
+rod([0, -1.55, -0.1], [0.18, 0.08, -1.05], 0.03, silverSoft, 12);
+rod([0, -1.2, -0.1], [0.21, 0.12, 2.0], 0.026, silverSoft, 12);
+rod([0, -1.2, -0.1], [0.14, 0.02, -2.0], 0.026, silverSoft, 12);
+
+/* Small clamps along boom */
+for (let z = -2.6; z <= 2.4; z += 0.72) {
+  box([0.12, 0.08, 0.08], [0.12, 0.15, z], graphite);
+}
+
+/* =========================================
+   7. REFLECTOR GRID
+   ========================================= */
+
+const reflectorZ = -3.0;
+const reflectorW = 1.65;
+const reflectorH = 1.9;
+
+/* Frame */
+rod([-reflectorW / 2, -reflectorH / 2, reflectorZ], [reflectorW / 2, -reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
+rod([-reflectorW / 2, reflectorH / 2, reflectorZ], [reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
+rod([-reflectorW / 2, -reflectorH / 2, reflectorZ], [-reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
+rod([reflectorW / 2, -reflectorH / 2, reflectorZ], [reflectorW / 2, reflectorH / 2, reflectorZ], 0.022, silverSoft, 12);
+
+/* Mesh lines */
+for (let x = -0.65; x <= 0.65; x += 0.18) {
+  rod([x, -0.88, reflectorZ], [x, 0.88, reflectorZ], 0.008, silver, 8);
+}
+for (let y = -0.72; y <= 0.72; y += 0.18) {
+  rod([-0.72, y, reflectorZ], [0.72, y, reflectorZ], 0.008, silver, 8);
+}
+
+/* Reflector supports */
+rod([0.05, 0.1, -2.2], [-0.62, 0.7, reflectorZ], 0.02, silverSoft, 10);
+rod([0.05, 0.1, -2.2], [-0.62, -0.7, reflectorZ], 0.02, silverSoft, 10);
+rod([0.05, 0.1, -2.2], [0.62, 0.7, reflectorZ], 0.02, silverSoft, 10);
+rod([0.05, 0.1, -2.2], [0.62, -0.7, reflectorZ], 0.02, silverSoft, 10);
+
+/* =========================================
+   8. DRIVEN ELEMENT
+   ========================================= */
+
+const feedZ = -1.95;
+
+/* Folded dipole look */
+torus([0.12, 0.15, feedZ], 0.42, 0.018, [Math.PI / 2, 0, 0], silver);
+rod([-0.42, 0.15, feedZ], [-0.18, 0.15, feedZ], 0.018, silver, 10);
+rod([0.42, 0.15, feedZ], [0.18, 0.15, feedZ], 0.018, silver, 10);
+
+/* Cross-polarized inner element */
+rod([-0.35, 0.15, feedZ], [0.35, 0.15, feedZ], 0.016, silverSoft, 10);
+rod([0.12, -0.2, feedZ], [0.12, 0.5, feedZ], 0.016, silverSoft, 10);
+
+/* Feed detail */
+sphere([0.12, 0.15, feedZ], 0.045, orangeGlow);
+rod([0.12, -0.05, feedZ], [0.02, -0.48, -1.45], 0.012, orangeGlow, 8);
+
+/* =========================================
+   9. DIRECTORS
+   ========================================= */
+
+function addDirector(z, lengthX, lengthY, thickness = 0.018) {
+  rod([-lengthX / 2, 0.15, z], [lengthX / 2, 0.15, z], thickness, silver, 10);
+  rod([0.12, -lengthY / 2, z], [0.12, lengthY / 2, z], thickness, silver, 10);
+  box([0.08, 0.06, 0.06], [0.12, 0.15, z], graphite);
+}
+
+/* First directors, slightly larger */
+let z = -1.35;
+let lenX = 1.08;
+let lenY = 1.18;
+
+for (let i = 0; i < 14; i++) {
+  addDirector(z, lenX, lenY, i < 4 ? 0.02 : 0.017);
+  z += 0.34;
+  lenX -= 0.03;
+  lenY -= 0.035;
+}
+
+/* Extra front parasitic tips for a richer silhouette */
+for (let i = 0; i < 3; i++) {
+  const frontZ = 3.0 + i * 0.26;
+  rod([-0.24 + i * 0.01, 0.15, frontZ], [0.48 - i * 0.02, 0.15, frontZ], 0.012, silverSoft, 8);
+  rod([0.12, -0.28 + i * 0.01, frontZ], [0.12, 0.42 - i * 0.02, frontZ], 0.012, silverSoft, 8);
+}
+
+/* =========================================
+   10. DECORATIVE FIELD LINES
+   ========================================= */
+
+function createWaveCurve(offsetY, amplitude, length, phase = 0) {
+  return new THREE.CatmullRomCurve3(
+    Array.from({ length: 48 }, (_, i) => {
+      const t = i / 47;
+      const z = -1.6 + t * length;
+      const x = 0.9 + Math.sin(t * Math.PI * 2 + phase) * amplitude;
+      const y = offsetY + Math.sin(t * Math.PI * 4 + phase) * 0.06;
+      return new THREE.Vector3(x, y, z);
+    })
+  );
+}
+
+const wave1 = tubeFromCurve(createWaveCurve(0.62, 0.18, 4.6, 0), 0.012, waveMaterialA, 160);
+const wave2 = tubeFromCurve(createWaveCurve(0.28, 0.14, 4.6, 1.4), 0.010, waveMaterialB, 160);
+const wave3 = tubeFromCurve(createWaveCurve(-0.08, 0.12, 4.6, 2.2), 0.008, waveMaterialA, 160);
+
+wave1.position.x += 0.18;
+wave2.position.x += 0.26;
+wave3.position.x += 0.34;
+
+/* Concentric wave rings near feed */
+const ringGroup = new THREE.Group();
+antenna.add(ringGroup);
+
+for (let i = 0; i < 4; i++) {
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(0.18 + i * 0.1, 0.006, 10, 80),
+    i % 2 === 0 ? waveMaterialB.clone() : waveMaterialA.clone()
+  );
+  ring.position.set(0.15, 0.15, feedZ + 0.04);
+  ring.rotation.set(Math.PI / 2, 0, 0);
+  ring.userData.baseScale = 1 + i * 0.12;
+  ring.scale.setScalar(ring.userData.baseScale);
+  ringGroup.add(ring);
+}
+
+/* =========================================
+   11. ORIENTATION
+   ========================================= */
+
+antenna.rotation.y = -0.78;
+antenna.rotation.x = -0.08;
+antenna.position.set(0.4, -0.15, 0);
+
+/* =========================================
+   12. POINTER INTERACTION
+   ========================================= */
+
 let pointerX = 0;
 let pointerY = 0;
 
@@ -128,7 +331,10 @@ window.addEventListener("pointermove", (event) => {
   pointerY = event.clientY / window.innerHeight - 0.5;
 });
 
-// Responsive canvas
+/* =========================================
+   13. RESIZE
+   ========================================= */
+
 function resize() {
   const width = container.clientWidth;
   const height = container.clientHeight;
@@ -142,28 +348,41 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
-// Animation
+/* =========================================
+   14. ANIMATION
+   ========================================= */
+
 const clock = new THREE.Clock();
-const reduceMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)"
-).matches;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function animate() {
   requestAnimationFrame(animate);
 
-  if (!reduceMotion) {
-    const time = clock.getElapsedTime();
+  const t = clock.getElapsedTime();
 
+  if (!reduceMotion) {
     antenna.rotation.y += (
-      -0.25 + pointerX * 0.45 +
-      Math.sin(time * 0.35) * 0.08 -
-      antenna.rotation.y
+      -0.78 + pointerX * 0.42 + Math.sin(t * 0.35) * 0.05 - antenna.rotation.y
     ) * 0.035;
 
     antenna.rotation.x += (
-      -0.12 + pointerY * 0.18 -
-      antenna.rotation.x
+      -0.08 + pointerY * 0.16 - antenna.rotation.x
     ) * 0.035;
+
+    wave1.material.opacity = 0.24 + Math.sin(t * 1.8) * 0.08;
+    wave2.material.opacity = 0.28 + Math.sin(t * 2.1 + 1.0) * 0.10;
+    wave3.material.opacity = 0.18 + Math.sin(t * 1.6 + 2.1) * 0.07;
+
+    wave1.position.z = Math.sin(t * 1.2) * 0.04;
+    wave2.position.z = Math.sin(t * 1.4 + 1.2) * 0.05;
+    wave3.position.z = Math.sin(t * 1.1 + 2.0) * 0.03;
+
+    ringGroup.children.forEach((ring, i) => {
+      const pulse = Math.sin(t * 2.2 - i * 0.55) * 0.18;
+      const scale = ring.userData.baseScale + pulse;
+      ring.scale.set(scale, scale, scale);
+      ring.material.opacity = 0.14 + (1 - i * 0.16) * 0.16 + pulse * 0.12;
+    });
   }
 
   renderer.render(scene, camera);
