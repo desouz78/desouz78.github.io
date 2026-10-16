@@ -274,22 +274,51 @@ for (let i = 0; i < 5; i++) {
 
 const svgNS = "http://www.w3.org/2000/svg";
 const heroWavefronts = [];
+const heroMeridians = [];
 
-for (let i = 0; i < 22; i++) {
+// These theta slices are projected from the SAME 3D envelope
+// used near the antenna, so the large pattern stays coherent.
+const heroThetaSlices = [0.12, 0.20, 0.30, 0.42, 0.58, 0.78, 1.02, 1.34, 1.78, 2.28, 2.88];
+const heroPhiSlices = [-0.55, -0.18, 0.18, 0.55];
+
+heroThetaSlices.forEach((theta, i) => {
   const path = document.createElementNS(svgNS, "path");
 
   path.setAttribute("fill", "none");
-  path.setAttribute("stroke", i % 4 === 0 ? "#ffa064" : i % 3 === 0 ? "#ff8846" : "#ff6735");
-  path.setAttribute("stroke-width", i % 4 === 0 ? "1.25" : "0.8");
+  path.setAttribute("stroke", i % 3 === 0 ? "#ffa064" : i % 2 === 0 ? "#ff8b49" : "#ff6f39");
+  path.setAttribute("stroke-width", i < 4 ? "1.05" : "0.82");
   path.setAttribute("vector-effect", "non-scaling-stroke");
   path.setAttribute("stroke-linecap", "round");
   path.setAttribute("opacity", "0");
 
   overlay.appendChild(path);
-  heroWavefronts.push({ path, offset: i / 22 });
-}
+  heroWavefronts.push({
+    path,
+    theta,
+    offset: i / heroThetaSlices.length
+  });
+});
 
-// Convert 3D world coordinates into coordinates relative to the hero section.
+heroPhiSlices.forEach((phi, i) => {
+  const path = document.createElementNS(svgNS, "path");
+
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", i % 2 === 0 ? "#ff7f43" : "#ff9b62");
+  path.setAttribute("stroke-width", "0.72");
+  path.setAttribute("vector-effect", "non-scaling-stroke");
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("opacity", "0");
+
+  overlay.appendChild(path);
+  heroMeridians.push({
+    path,
+    phi,
+    offset: i / heroPhiSlices.length
+  });
+});
+
+let overlaySize = "";
+
 function projectToHero(worldPoint, canvasRect, heroRect) {
   const p = worldPoint.clone().project(camera);
 
@@ -299,8 +328,10 @@ function projectToHero(worldPoint, canvasRect, heroRect) {
   };
 }
 
-let previousScreenDirection = new THREE.Vector2(-1, 0);
-let overlaySize = "";
+function projectRadiationPoint(localPoint, scale, canvasRect, heroRect) {
+  const worldPoint = radiation.localToWorld(localPoint.clone().multiplyScalar(scale));
+  return projectToHero(worldPoint, canvasRect, heroRect);
+}
 
 function updateHeroRadiation(time, reduceMotion) {
   const heroRect = hero.getBoundingClientRect();
@@ -319,99 +350,45 @@ function updateHeroRadiation(time, reduceMotion) {
 
   antenna.updateMatrixWorld(true);
 
-  // Feed point and antenna axes in world space
-  const feed = antenna.localToWorld(new THREE.Vector3(0.12, 0.15, feedZ));
-  const forwardTip = antenna.localToWorld(new THREE.Vector3(0.12, 0.15, feedZ + 2.4));
-  const rightTip = antenna.localToWorld(new THREE.Vector3(1.2, 0.15, feedZ));
-  const upTip = antenna.localToWorld(new THREE.Vector3(0.12, 1.2, feedZ));
-
-  const origin = projectToHero(feed, canvasRect, heroRect);
-  const forward2D = projectToHero(forwardTip, canvasRect, heroRect);
-  const right2D = projectToHero(rightTip, canvasRect, heroRect);
-  const up2D = projectToHero(upTip, canvasRect, heroRect);
-
-  // Screen-space forward direction
-  const dir2D = new THREE.Vector2(forward2D.x - origin.x, forward2D.y - origin.y);
-
-  if (dir2D.lengthSq() > 16) {
-    previousScreenDirection.copy(dir2D).normalize();
-  }
-
-  const direction = previousScreenDirection.clone();
-  const perpendicular = new THREE.Vector2(-direction.y, direction.x);
-
-  // World-space forward direction
-  const forwardWorld = forwardTip.clone().sub(feed).normalize();
-  const toCamera = camera.position.clone().sub(feed).normalize();
-
-  // 0 => side view, 1 => pointing toward/away from camera
-  const facingAmount = THREE.MathUtils.smoothstep(
-    Math.abs(forwardWorld.dot(toCamera)),
-    0.72,
-    0.97
-  );
-
-  // Slightly different deformation depending on front/back
-  const depthSign = Math.sign(forwardWorld.dot(toCamera)) || 1;
-
-  // Projected local axes for additional stability
-  const rightVec2 = new THREE.Vector2(right2D.x - origin.x, right2D.y - origin.y);
-  const upVec2 = new THREE.Vector2(up2D.x - origin.x, up2D.y - origin.y);
-
-  const axisMix = rightVec2.lengthSq() > upVec2.lengthSq()
-    ? rightVec2.clone().normalize()
-    : upVec2.clone().normalize();
-
-  const maxRadius = Math.max(heroRect.width, heroRect.height) * 1.55;
-
+  // Large projected wavefront loops (same 3D envelope, just bigger)
   for (const wave of heroWavefronts) {
     const progress = reduceMotion ? wave.offset : (wave.offset + time * 0.10) % 1;
-    const distance = 20 + progress * maxRadius;
-    const fade = Math.pow(Math.sin(Math.PI * progress), 1.18);
+    const scale = 0.72 + progress * 10.8;
+    const fade = Math.pow(Math.sin(Math.PI * progress), 1.16);
 
     const points = [];
 
-    for (let j = 0; j <= 220; j++) {
-      const angle = -Math.PI + j * ((2 * Math.PI) / 220);
+    for (let j = 0; j <= 180; j++) {
+      const phi = j * (Math.PI * 2 / 180);
+      const localPoint = envelopePoint(wave.theta, phi);
+      const p = projectRadiationPoint(localPoint, scale, canvasRect, heroRect);
 
-      // theta = 0 along main lobe, theta = pi to the back
-      const theta = Math.abs(angle);
-      const gain = radiationPattern(theta);
-
-      // SIDE VIEW MODEL (directional on screen)
-      const parallel = Math.cos(angle) * gain * distance;
-      const lateral = Math.sin(angle) * gain * distance * 0.92;
-
-      const xSide = origin.x + direction.x * parallel + perpendicular.x * lateral;
-      const ySide = origin.y + direction.y * parallel + perpendicular.y * lateral;
-
-      // FRONT/BACK VIEW MODEL
-      // When looking almost along the antenna axis, the screen projection
-      // should become more circular / concentric rather than “stretched”.
-      const circularScaleX = 0.82 + 0.18 * Math.cos(angle * 2);
-      const circularScaleY = 0.82 + 0.18 * Math.sin(angle * 2);
-
-      const frontRadius = gain * distance;
-
-      const xFront =
-        origin.x +
-        Math.cos(angle) * frontRadius * circularScaleX +
-        axisMix.x * Math.sin(angle) * frontRadius * 0.18 * depthSign;
-
-      const yFront =
-        origin.y +
-        Math.sin(angle) * frontRadius * circularScaleY +
-        axisMix.y * Math.sin(angle) * frontRadius * 0.18 * depthSign;
-
-      // Blend between side view and front/back view
-      const x = THREE.MathUtils.lerp(xSide, xFront, facingAmount);
-      const y = THREE.MathUtils.lerp(ySide, yFront, facingAmount);
-
-      points.push(`${j === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`);
+      points.push(`${j === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`);
     }
 
     wave.path.setAttribute("d", points.join(" ") + " Z");
-    wave.path.setAttribute("opacity", (reduceMotion ? 0.10 : 0.34 * fade).toFixed(3));
+    wave.path.setAttribute("opacity", (reduceMotion ? 0.08 : 0.26 * fade).toFixed(3));
+  }
+
+  // A few projected meridians help preserve the directional feel
+  // without inventing a separate 2D radiation model.
+  for (const meridian of heroMeridians) {
+    const progress = reduceMotion ? meridian.offset : (meridian.offset + time * 0.10) % 1;
+    const scale = 0.72 + progress * 10.8;
+    const fade = Math.pow(Math.sin(Math.PI * progress), 1.12);
+
+    const points = [];
+
+    for (let j = 0; j <= 120; j++) {
+      const theta = j * (Math.PI / 120);
+      const localPoint = envelopePoint(theta, meridian.phi);
+      const p = projectRadiationPoint(localPoint, scale, canvasRect, heroRect);
+
+      points.push(`${j === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+    }
+
+    meridian.path.setAttribute("d", points.join(" "));
+    meridian.path.setAttribute("opacity", (reduceMotion ? 0.05 : 0.13 * fade).toFixed(3));
   }
 }
 
