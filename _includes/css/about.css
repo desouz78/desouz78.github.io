@@ -1,0 +1,141 @@
+
+/* =========================================
+   ABOUT ME
+   ========================================= */
+
+.about-story {
+  position: relative;
+  max-width: 900px;
+  margin: 80px auto 100px;
+  padding: 70px 20px 80px 48px;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: 40px;
+}
+
+/* Transmission line */
+
+.about-rail {
+  position: absolute;
+  top: 70px;
+  bottom: 85px;
+  left: 8px;
+  width: 1px;
+  background: rgba(166, 180, 200, 0.22);
+  pointer-events: none;
+  --signal-progress: 0%;
+}
+
+.about-rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: var(--signal-progress);
+  background: linear-gradient(#82402b, #ff985c);
+}
+
+.about-rail::after {
+  content: "";
+  position: absolute;
+  top: var(--signal-progress);
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff985c;
+  box-shadow: 0 0 12px rgba(255, 130, 70, 0.55);
+  transform: translateY(-50%);
+}
+
+/* Chapters */
+
+.about-chapter {
+  position: relative;
+  max-width: 670px;
+  margin-bottom: 85px;
+}
+
+.about-chapter:last-child {
+  margin-bottom: 0;
+}
+
+.about-chapter::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: -44px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+.about-kicker {
+  display: block;
+  margin-bottom: 22px;
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.about-chapter h2 {
+  margin-bottom: 24px;
+  font-size: clamp(3.5rem, 7vw, 5.5rem);
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -0.06em;
+}
+
+.about-chapter h3 {
+  margin-bottom: 20px;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.045em;
+}
+
+.about-chapter p {
+  max-width: 580px;
+  color: var(--muted);
+  font-size: 1.04rem;
+  line-height: 1.8;
+}
+
+.about-aside {
+  display: inline-block;
+  margin-top: 22px;
+  color: var(--subtle);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* Mobile */
+
+@media (max-width: 650px) {
+  .about-story {
+    margin: 45px auto 70px;
+    padding: 65px 4px 60px 36px;
+  }
+
+  .about-rail {
+    top: 65px;
+    bottom: 65px;
+  }
+
+  .about-chapter {
+    margin-bottom: 70px;
+  }
+
+  .about-chapter::before {
+    left: -32px;
+  }
+
+  .about-chapter p {
+    font-size: 0.96rem;
+  }
+}
