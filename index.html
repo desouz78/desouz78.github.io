@@ -1,14 +1,30 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Luciano Stork</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="The personal academic website and research portfolio of Luciano Stork."
+  >
+
+  <title>Luciano Stork | Research Portfolio</title>
+
   <style>
+    /* =========================================
+       1. GLOBAL SETTINGS
+       ========================================= */
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -16,24 +32,46 @@
       background: #07111f;
       color: #f4f7fb;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
+
+    /* =========================================
+       2. HERO SECTION
+       ========================================= */
 
     .hero {
       min-height: 100vh;
-      display: flex;
+      min-height: 100svh;
+
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.05fr)
+        minmax(0, 0.95fr);
+
       align-items: center;
-      justify-content: space-between;
-      padding: 80px 8%;
-      gap: 40px;
+      gap: clamp(24px, 4vw, 72px);
+
+      padding:
+        80px
+        clamp(24px, 7vw, 120px);
+
       position: relative;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 80% 45%, rgba(255, 120, 40, 0.08), transparent 22%),
-        radial-gradient(circle at 78% 45%, rgba(255, 170, 90, 0.06), transparent 30%),
-        linear-gradient(135deg, #081222 0%, #0b1730 55%, #09111d 100%);
+
+      background: linear-gradient(
+        135deg,
+        #081222 0%,
+        #0b1730 55%,
+        #09111d 100%
+      );
     }
 
+    /* =========================================
+       3. HERO TEXT
+       ========================================= */
+
     .hero-text {
+      position: relative;
       max-width: 620px;
       z-index: 2;
     }
@@ -41,25 +79,27 @@
     .eyebrow {
       color: #8fa8c7;
       font-size: 0.95rem;
+      font-weight: 500;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 18px;
     }
 
     h1 {
-      font-size: clamp(2.8rem, 6vw, 5.2rem);
-      line-height: 1.02;
-      margin-bottom: 18px;
+      font-size: clamp(2.8rem, 5.5vw, 5.2rem);
       font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      margin-bottom: 22px;
     }
 
     .tagline {
-      font-size: clamp(1.15rem, 2vw, 1.45rem);
+      font-size: clamp(1.15rem, 1.8vw, 1.45rem);
       line-height: 1.5;
+      font-style: italic;
       color: #d7e1ef;
       max-width: 560px;
-      margin-bottom: 24px;
-      font-style: italic;
+      margin-bottom: 26px;
     }
 
     .intro {
@@ -67,22 +107,36 @@
       line-height: 1.75;
       color: #b8c7da;
       max-width: 560px;
-      margin-bottom: 34px;
+      margin-bottom: 36px;
     }
+
+    /* =========================================
+       4. NAVIGATION BUTTONS
+       ========================================= */
 
     .buttons {
       display: flex;
-      gap: 14px;
+      align-items: center;
       flex-wrap: wrap;
+      gap: 14px;
     }
 
     .btn {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
       padding: 14px 22px;
       border-radius: 999px;
+
       text-decoration: none;
+      font-size: 0.95rem;
       font-weight: 600;
-      transition: 0.25s ease;
+
+      transition:
+        background 0.25s ease,
+        transform 0.25s ease,
+        border-color 0.25s ease;
     }
 
     .btn-primary {
@@ -91,153 +145,218 @@
     }
 
     .btn-primary:hover {
+      background: #dce7f5;
       transform: translateY(-2px);
     }
 
     .btn-secondary {
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: #f4f7fb;
-      background: rgba(255,255,255,0.03);
     }
 
     .btn-secondary:hover {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.4);
       transform: translateY(-2px);
     }
 
+    .btn:focus-visible {
+      outline: 2px solid #f4f7fb;
+      outline-offset: 4px;
+    }
+
+    /* =========================================
+       5. THREE.JS ANTENNA SCENE
+       ========================================= */
+
     .hero-visual {
-      flex: 1;
-      min-width: 320px;
+      position: relative;
+      width: 100%;
+      min-width: 0;
+
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
+
       z-index: 1;
     }
 
     .visual-wrap {
       position: relative;
-      width: 420px;
-      height: 420px;
+
+      width: 100%;
+      max-width: 650px;
+      height: min(72vh, 600px);
+      min-height: 400px;
+
+      overflow: hidden;
     }
 
-    .antenna {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 6px;
-      height: 150px;
-      background: linear-gradient(to top, #8ea6c4, #dbe7f5);
-      border-radius: 6px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.12);
+    #antenna-scene canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
-    .antenna::before {
-      content: "";
-      position: absolute;
-      top: -18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #eaf1fb;
-      box-shadow: 0 0 14px rgba(255,255,255,0.28);
-    }
-
-    .wave {
-      position: absolute;
-      left: 50%;
-      bottom: 170px;
-      transform: translateX(-50%);
-      border: 1.4px solid rgba(182, 206, 235, 0.32);
-      border-radius: 50%;
-      box-shadow:
-        0 0 10px rgba(255, 120, 40, 0.08),
-        inset 0 0 12px rgba(255, 120, 40, 0.05);
-    }
-
-    .wave1 {
-      width: 120px;
-      height: 120px;
-    }
-
-    .wave2 {
-      width: 190px;
-      height: 190px;
-    }
-
-    .wave3 {
-      width: 270px;
-      height: 270px;
-    }
-
-    .wave4 {
-      width: 350px;
-      height: 350px;
-    }
+    /* =========================================
+       6. RESPONSIVE DESIGN
+       ========================================= */
 
     @media (max-width: 980px) {
+
       .hero {
-        flex-direction: column;
-        justify-content: center;
-        text-align: left;
-        padding-top: 90px;
-        padding-bottom: 60px;
+        grid-template-columns: 1fr;
+        gap: 24px;
+
+        padding:
+          72px
+          clamp(24px, 6vw, 60px);
+      }
+
+      .hero-text {
+        max-width: 700px;
       }
 
       .hero-visual {
-        order: -1;
+        width: 100%;
       }
 
       .visual-wrap {
-        width: 320px;
-        height: 320px;
+        width: 100%;
+        max-width: 500px;
+        height: 420px;
+        min-height: 0;
       }
 
-      .antenna {
-        height: 110px;
-        bottom: 20px;
-      }
-
-      .wave {
-        bottom: 120px;
-      }
-
-      .wave1 { width: 90px; height: 90px; }
-      .wave2 { width: 145px; height: 145px; }
-      .wave3 { width: 210px; height: 210px; }
-      .wave4 { width: 275px; height: 275px; }
     }
+
+    @media (max-width: 600px) {
+
+      .hero {
+        padding: 56px 24px;
+        gap: 12px;
+      }
+
+      h1 {
+        font-size: clamp(2.6rem, 11vw, 4rem);
+      }
+
+      .eyebrow {
+        font-size: 0.8rem;
+      }
+
+      .tagline {
+        font-size: 1.15rem;
+      }
+
+      .intro {
+        font-size: 0.98rem;
+        line-height: 1.7;
+      }
+
+      .buttons {
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 12px 18px;
+        font-size: 0.88rem;
+      }
+
+      .visual-wrap {
+        height: 340px;
+      }
+
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      html {
+        scroll-behavior: auto;
+      }
+
+      .btn {
+        transition: none;
+      }
+
+    }
+
   </style>
 </head>
-<body>
-  <section class="hero">
-    <div class="hero-text">
-      <p class="eyebrow">PhD Research Portfolio</p>
-      <h1>Luciano Stork</h1>
-      <p class="tagline">Close to discovering something I still cannot name.</p>
-      <p class="intro">
-        I am a PhD researcher interested in telecommunications, signal processing,
-        wireless sensing, and the systems that allow invisible phenomena to become measurable,
-        interpretable, and useful.
-      </p>
-      <div class="buttons">
-        <a href="#" class="btn btn-primary">Explore Hands-on</a>
-        <a href="#" class="btn btn-secondary">Read My Writing</a>
-      </div>
-    </div>
 
-    <div class="hero-visual">
-      <div class="visual-wrap">
-        <div class="wave wave4"></div>
-        <div class="wave wave3"></div>
-        <div class="wave wave2"></div>
-        <div class="wave wave1"></div>
-        <div class="antenna"></div>
+<body>
+
+  <!-- =======================================
+       HERO SECTION
+       ======================================= -->
+
+  <main>
+
+    <section class="hero" id="home">
+
+      <!-- Introduction -->
+
+      <div class="hero-text">
+
+        <p class="eyebrow">
+          PhD Research Portfolio
+        </p>
+
+        <h1>
+          Luciano Stork
+        </h1>
+
+        <p class="tagline">
+          Close to discovering something I still cannot name.
+        </p>
+
+        <p class="intro">
+          I am a PhD researcher interested in telecommunications,
+          signal processing, wireless sensing, and the systems that
+          allow invisible phenomena to become measurable,
+          interpretable, and useful.
+        </p>
+
+        <div class="buttons">
+
+          <a href="#hands-on" class="btn btn-primary">
+            Explore Hands-on
+          </a>
+
+          <a href="#writing" class="btn btn-secondary">
+            Read My Writing
+          </a>
+
+        </div>
+
       </div>
-    </div>
-  </section>
+
+      <!-- Interactive 3D Antenna -->
+
+      <div class="hero-visual">
+
+        <div
+          id="antenna-scene"
+          class="visual-wrap"
+          role="img"
+          aria-label="Interactive 3D visualization of a cross-polarized Yagi antenna"
+        ></div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- =======================================
+       THREE.JS ANTENNA MODULE
+       ======================================= -->
+
+  <script
+    type="module"
+    src="./js/antenna.js"
+  ></script>
+
 </body>
 </html>
