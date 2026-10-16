@@ -13,7 +13,7 @@ if (!container) {
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200);
-camera.position.set(8.5, 4.5, 10.5);
+camera.position.set(7, 3.8, 8.5);
 camera.lookAt(0.4, 0.2, 0);
 
 const renderer = new THREE.WebGLRenderer({
@@ -30,17 +30,17 @@ container.appendChild(renderer.domElement);
    2. LIGHTING
    ========================================= */
 
-scene.add(new THREE.AmbientLight(0xaec3dd, 1.6));
+scene.add(new THREE.AmbientLight(0xaec3dd, 2.1));
 
-const keyLight = new THREE.DirectionalLight(0xeaf4ff, 3.2);
+const keyLight = new THREE.DirectionalLight(0xeaf4ff, 4.2);
 keyLight.position.set(7, 10, 8);
 scene.add(keyLight);
 
-const fillLight = new THREE.DirectionalLight(0x86a8cf, 1.4);
+const fillLight = new THREE.DirectionalLight(0x86a8cf, 2.0);
 fillLight.position.set(-6, 3, 7);
 scene.add(fillLight);
 
-const rimLight = new THREE.DirectionalLight(0xff8a4b, 2.4);
+const rimLight = new THREE.DirectionalLight(0xff8a4b, 2.8);
 rimLight.position.set(-8, 4, -5);
 scene.add(rimLight);
 
@@ -133,7 +133,7 @@ function sphere(position, radius, material) {
     new THREE.SphereGeometry(radius, 20, 20),
     material
   );
-  mesh.position.set(...position);
+  mesh.position.set(...position);xfcare
   antenna.add(mesh);
   return mesh;
 }
@@ -318,18 +318,98 @@ for (let i = 0; i < 4; i++) {
 antenna.rotation.y = -0.78;
 antenna.rotation.x = -0.08;
 antenna.position.set(0.4, -0.15, 0);
+antenna.scale.setScalar(1.15);
+
 
 /* =========================================
-   12. POINTER INTERACTION
+   12. DRAG-TO-ROTATE INTERACTION
    ========================================= */
 
-let pointerX = 0;
-let pointerY = 0;
+const canvas = renderer.domElement;
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 
-window.addEventListener("pointermove", (event) => {
-  pointerX = event.clientX / window.innerWidth - 0.5;
-  pointerY = event.clientY / window.innerHeight - 0.5;
+let isDragging = false;
+let previousX = 0;
+let previousY = 0;
+
+let targetRotationX = antenna.rotation.x;
+let targetRotationY = antenna.rotation.y;
+
+// Invisible interaction area around the antenna
+const hitbox = new THREE.Mesh(
+  new THREE.BoxGeometry(2.7, 4.0, 7.5),
+  new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0,
+    colorWrite: false,
+    depthWrite: false
+  })
+);
+
+hitbox.position.set(0, -0.3, 0);
+antenna.add(hitbox);
+
+canvas.style.cursor = "grab";
+canvas.style.touchAction = "none";
+
+// Start rotating only when clicking the antenna
+canvas.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+
+  const rect = canvas.getBoundingClientRect();
+
+  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(pointer, camera);
+
+  if (raycaster.intersectObject(hitbox).length === 0) return;
+
+  isDragging = true;
+  previousX = event.clientX;
+  previousY = event.clientY;
+
+  canvas.setPointerCapture(event.pointerId);
+  canvas.style.cursor = "grabbing";
 });
+
+// Rotate while dragging
+canvas.addEventListener("pointermove", (event) => {
+  if (!isDragging) return;
+
+  const deltaX = event.clientX - previousX;
+  const deltaY = event.clientY - previousY;
+
+  targetRotationY += deltaX * 0.006;
+
+  targetRotationX = THREE.MathUtils.clamp(
+    targetRotationX + deltaY * 0.005,
+    -0.9,
+    0.9
+  );
+
+  previousX = event.clientX;
+  previousY = event.clientY;
+});
+
+// Stop rotating when released
+function stopDragging(event) {
+  isDragging = false;
+  canvas.style.cursor = "grab";
+
+  if (canvas.hasPointerCapture(event.pointerId)) {
+    canvas.releasePointerCapture(event.pointerId);
+  }
+}
+
+canvas.addEventListener("pointerup", stopDragging);
+canvas.addEventListener("pointercancel", stopDragging);
+canvas.addEventListener("lostpointercapture", () => {
+  isDragging = false;
+  canvas.style.cursor = "grab";
+});
+
 
 /* =========================================
    13. RESIZE
@@ -360,14 +440,11 @@ function animate() {
 
   const t = clock.getElapsedTime();
 
-  if (!reduceMotion) {
-    antenna.rotation.y += (
-      -0.78 + pointerX * 0.42 + Math.sin(t * 0.35) * 0.05 - antenna.rotation.y
-    ) * 0.035;
+  antenna.rotation.y = THREE.MathUtils.lerp(antenna.rotation.y, targetRotationY, reduceMotion ? 1 : 0.12);
 
-    antenna.rotation.x += (
-      -0.08 + pointerY * 0.16 - antenna.rotation.x
-    ) * 0.035;
+  antenna.rotation.x = THREE.MathUtils.lerp(antenna.rotation.x, targetRotationX, reduceMotion ? 1 : 0.12);
+
+  if (!reduceMotion) {
 
     wave1.material.opacity = 0.24 + Math.sin(t * 1.8) * 0.08;
     wave2.material.opacity = 0.28 + Math.sin(t * 2.1 + 1.0) * 0.10;
