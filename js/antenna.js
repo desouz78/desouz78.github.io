@@ -468,82 +468,32 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
-
 /* =========================================
-   10. DIRECTIONAL RADIATION FIELD
+   14. ANIMATION
    ========================================= */
 
-// Radiation follows the antenna's local coordinate system.
-const radiation = new THREE.Group();
-radiation.position.set(0.12, 0.15, feedZ);
-antenna.add(radiation);
+const clock = new THREE.Clock();
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const wavefronts = [];
-const waveColors = [0xff6835, 0xff8749, 0xffad69];
+function animate() {
+  requestAnimationFrame(animate);
 
-// Approximate directional radiation pattern.
-// Main lobe points toward the directors (+Z).
-function radiationPattern(theta) {
-  const c = Math.cos(theta);
-  const main = Math.pow(Math.max(0, c), 6);
-  const side = 0.085 * Math.pow(Math.sin(4 * theta), 2) * Math.pow(Math.sin(theta), 2);
-  const back = 0.045 * Math.pow(Math.max(0, -c), 4);
+  const t = clock.getElapsedTime();
 
-  return 0.025 + main + side + back;
-}
+  // Smooth drag-to-rotate interaction
+  antenna.rotation.y = THREE.MathUtils.lerp(antenna.rotation.y, targetRotationY, reduceMotion ? 1 : 0.12);
+  antenna.rotation.x = THREE.MathUtils.lerp(antenna.rotation.x, targetRotationX, reduceMotion ? 1 : 0.12);
 
-// Point on the three-dimensional radiation envelope.
-function fieldPoint(theta, phi) {
-  const radius = radiationPattern(theta);
-  const x = radius * Math.sin(theta) * Math.cos(phi);
-  const y = radius * Math.sin(theta) * Math.sin(phi);
-  const z = radius * Math.cos(theta);
+  // Expanding directional wavefronts
+  for (const { shell, material, offset } of wavefronts) {
+    const progress = reduceMotion ? offset : (offset + t * 0.12) % 1;
+    const distance = 0.25 + progress * 10.5;
 
-  return new THREE.Vector3(x, y, z);
-}
-
-// Build a thin electromagnetic field line.
-function fieldLine(points, material) {
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-  return new THREE.Line(geometry, material);
-}
-
-// Multiple wavefronts propagate outward continuously.
-for (let i = 0; i < 12; i++) {
-  const shell = new THREE.Group();
-
-  const material = new THREE.LineBasicMaterial({
-    color: waveColors[i % waveColors.length],
-    transparent: true,
-    opacity: 0.4,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
-  });
-
-  // Meridians reveal the directional lobe geometry.
-  for (let j = 0; j < 16; j++) {
-    const phi = (j / 16) * Math.PI * 2;
-
-    const points = Array.from({ length: 100 }, (_, k) => {
-      const theta = (k / 99) * Math.PI;
-      return fieldPoint(theta, phi);
-    });
-
-    shell.add(fieldLine(points, material));
+    shell.scale.setScalar(distance);
+    material.opacity = reduceMotion ? 0.16 : 0.52 * Math.sin(Math.PI * progress);
   }
 
-  // Wavefront contours add density and depth.
-  const contours = [0.16, 0.3, 0.45, 0.65, 0.85, 1.1, 1.4, 2.65];
-
-  for (const theta of contours) {
-    const points = Array.from({ length: 121 }, (_, k) => {
-      const phi = (k / 120) * Math.PI * 2;
-      return fieldPoint(theta, phi);
-    });
-
-    shell.add(fieldLine(points, material));
-  }
-
-  radiation.add(shell);
-  wavefronts.push({ shell, material, offset: i / 12 });
+  renderer.render(scene, camera);
 }
+
+animate();
