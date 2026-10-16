@@ -2,10 +2,9 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js";
 
 const container = document.getElementById("antenna-scene");
-const hero = document.getElementById("home");
 const overlay = document.getElementById("hero-radiation");
 
-if (!container || !hero || !overlay) {
+if (!container || !overlay) {
   throw new Error("Homepage antenna containers not found.");
 }
 
@@ -14,18 +13,27 @@ if (!container || !hero || !overlay) {
    ========================================= */
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200);
+const camera = new THREE.OrthographicCamera(-6, 6, 4.7, -4.7, 0.1, 250);
 
-camera.position.set(8.6, 4.6, 11.2);
-camera.lookAt(0.4, 0.2, 0);
+const center = new THREE.Vector3(0.4, 0.2, 0);
+const viewingAxis = new THREE.Vector3(8.2, 4.4, 11.2).normalize();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+camera.position.copy(center).addScaledVector(viewingAxis, 120);
+camera.lookAt(center);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true
+});
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0x000000, 0);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-container.appendChild(renderer.domElement);
+renderer.domElement.style.pointerEvents = "none";
 
+overlay.appendChild(renderer.domElement);
+
+// Lighting
 scene.add(new THREE.AmbientLight(0xaec3dd, 2.1));
 
 const keyLight = new THREE.DirectionalLight(0xeaf4ff, 4.2);
@@ -112,10 +120,9 @@ function sphere(position, radius, material) {
    3. ANTENNA GEOMETRY
    ========================================= */
 
-// Mast, booms and mounting hub
+// Mast and longitudinal booms
 rod([0, -2.8, -0.1], [0, -0.15, -0.1], 0.12, darkMetal, 18);
 rod([0, -3.35, -0.1], [0, -2.8, -0.1], 0.18, graphite, 18);
-
 rod([-0.1, 0.1, -3.6], [0.35, 0.25, 3.2], 0.075, darkMetal, 18);
 rod([-0.08, -0.12, -3.45], [0.32, 0.02, 3.0], 0.04, silverSoft);
 
@@ -134,7 +141,7 @@ for (let z = -2.6; z <= 2.4; z += 0.72) {
   box([0.12, 0.08, 0.08], [0.12, 0.15, z], graphite);
 }
 
-// Reflector at -Z; directors point toward +Z
+// Reflector at -Z
 const reflectorZ = -3.0;
 const reflectorW = 1.65;
 const reflectorH = 1.9;
@@ -203,12 +210,11 @@ antenna.position.set(0.15, -0.2, 0);
 antenna.scale.setScalar(0.96);
 
 /* =========================================
-   4. QUALITATIVE YAGI RADIATION PATTERN
+   4. QUALITATIVE YAGI DIRECTIVITY
    ========================================= */
 
-// Shared angular envelope for 3D and SVG wavefronts.
-// Illustrative directional pattern, not an EM simulation.
-
+// +Z points toward the directors.
+// This is an illustrative gain envelope, not an exact EM simulation.
 function radiationPattern(theta) {
   const main = 0.94 * Math.exp(-0.5 * (theta / 0.55) ** 2);
   const side1 = 0.095 * Math.exp(-0.5 * ((theta - 1.18) / 0.20) ** 2);
@@ -232,171 +238,61 @@ const radiation = new THREE.Group();
 radiation.position.set(0.12, 0.15, feedZ);
 antenna.add(radiation);
 
-const nearWavefronts = [];
+// All expanding shells share the same 3D geometry.
+const vertices = [];
 
-// Subtle 3D wavefronts surrounding the antenna
-for (let i = 0; i < 5; i++) {
-  const group = new THREE.Group();
+function addSegment(a, b) {
+  vertices.push(a.x, a.y, a.z, b.x, b.y, b.z);
+}
 
+// Meridians
+for (let m = 0; m < 16; m++) {
+  const phi = m * Math.PI * 2 / 16;
+
+  for (let k = 0; k < 80; k++) {
+    addSegment(envelopePoint(k * Math.PI / 80, phi), envelopePoint((k + 1) * Math.PI / 80, phi));
+  }
+}
+
+// Radiation envelope contours
+for (const theta of [0.16, 0.25, 0.36, 0.50, 0.67, 0.85, 1.12, 1.4, 1.9, 2.4, 2.85]) {
+  for (let k = 0; k < 96; k++) {
+    addSegment(envelopePoint(theta, k * Math.PI * 2 / 96), envelopePoint(theta, (k + 1) * Math.PI * 2 / 96));
+  }
+}
+
+const radiationGeometry = new THREE.BufferGeometry();
+radiationGeometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+radiationGeometry.computeBoundingSphere();
+
+const wavefronts = [];
+const WAVE_COUNT = 32;
+
+for (let i = 0; i < WAVE_COUNT; i++) {
   const material = new THREE.LineBasicMaterial({
-    color: i % 2 ? 0xff8a48 : 0xff6434,
+    color: i % 5 === 0 ? 0xffae71 : i % 2 ? 0xff763c : 0xff5426,
     transparent: true,
-    opacity: 0.08,
+    opacity: 0.1,
     depthWrite: false,
     blending: THREE.AdditiveBlending
   });
 
-  for (let meridian = 0; meridian < 9; meridian++) {
-    const phi = meridian * Math.PI / 9;
+  const shell = new THREE.LineSegments(radiationGeometry, material);
+  shell.frustumCulled = false;
+  radiation.add(shell);
 
-    const points = Array.from({ length: 95 }, (_, k) => {
-      return envelopePoint(k * Math.PI / 94, phi);
-    });
-
-    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
-  }
-
-  for (const theta of [0.25, 0.47, 0.72, 1.15, 1.9, 2.85]) {
-    const points = Array.from({ length: 97 }, (_, k) => {
-      return envelopePoint(theta, k * Math.PI * 2 / 96);
-    });
-
-    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
-  }
-
-  radiation.add(group);
-  nearWavefronts.push({ group, material, offset: i / 5 });
+  wavefronts.push({
+    shell,
+    material,
+    offset: i / WAVE_COUNT
+  });
 }
 
 /* =========================================
-   5. FULL-HERO SVG WAVEFRONTS
+   5. DRAG TO ROTATE
    ========================================= */
 
-const svgNS = "http://www.w3.org/2000/svg";
-const heroWavefronts = [];
-const heroMeridians = [];
-
-// These theta slices are projected from the SAME 3D envelope
-// used near the antenna, so the large pattern stays coherent.
-const heroThetaSlices = [0.12, 0.20, 0.30, 0.42, 0.58, 0.78, 1.02, 1.34, 1.78, 2.28, 2.88];
-const heroPhiSlices = [-0.55, -0.18, 0.18, 0.55];
-
-heroThetaSlices.forEach((theta, i) => {
-  const path = document.createElementNS(svgNS, "path");
-
-  path.setAttribute("fill", "none");
-  path.setAttribute("stroke", i % 3 === 0 ? "#ffa064" : i % 2 === 0 ? "#ff8b49" : "#ff6f39");
-  path.setAttribute("stroke-width", i < 4 ? "1.05" : "0.82");
-  path.setAttribute("vector-effect", "non-scaling-stroke");
-  path.setAttribute("stroke-linecap", "round");
-  path.setAttribute("opacity", "0");
-
-  overlay.appendChild(path);
-  heroWavefronts.push({
-    path,
-    theta,
-    offset: i / heroThetaSlices.length
-  });
-});
-
-heroPhiSlices.forEach((phi, i) => {
-  const path = document.createElementNS(svgNS, "path");
-
-  path.setAttribute("fill", "none");
-  path.setAttribute("stroke", i % 2 === 0 ? "#ff7f43" : "#ff9b62");
-  path.setAttribute("stroke-width", "0.72");
-  path.setAttribute("vector-effect", "non-scaling-stroke");
-  path.setAttribute("stroke-linecap", "round");
-  path.setAttribute("opacity", "0");
-
-  overlay.appendChild(path);
-  heroMeridians.push({
-    path,
-    phi,
-    offset: i / heroPhiSlices.length
-  });
-});
-
-let overlaySize = "";
-
-function projectToHero(worldPoint, canvasRect, heroRect) {
-  const p = worldPoint.clone().project(camera);
-
-  return {
-    x: canvasRect.left - heroRect.left + (p.x + 1) * canvasRect.width / 2,
-    y: canvasRect.top - heroRect.top + (1 - p.y) * canvasRect.height / 2
-  };
-}
-
-function projectRadiationPoint(localPoint, scale, canvasRect, heroRect) {
-  const worldPoint = radiation.localToWorld(localPoint.clone().multiplyScalar(scale));
-  return projectToHero(worldPoint, canvasRect, heroRect);
-}
-
-function updateHeroRadiation(time, reduceMotion) {
-  const heroRect = hero.getBoundingClientRect();
-  const canvasRect = renderer.domElement.getBoundingClientRect();
-
-  if (heroRect.width < 1 || heroRect.height < 1 || canvasRect.width < 1 || canvasRect.height < 1) {
-    return;
-  }
-
-  const size = `${heroRect.width} ${heroRect.height}`;
-
-  if (size !== overlaySize) {
-    overlay.setAttribute("viewBox", `0 0 ${size}`);
-    overlaySize = size;
-  }
-
-  antenna.updateMatrixWorld(true);
-
-  // Large projected wavefront loops (same 3D envelope, just bigger)
-  for (const wave of heroWavefronts) {
-    const progress = reduceMotion ? wave.offset : (wave.offset + time * 0.10) % 1;
-    const scale = 0.72 + progress * 10.8;
-    const fade = Math.pow(Math.sin(Math.PI * progress), 1.16);
-
-    const points = [];
-
-    for (let j = 0; j <= 180; j++) {
-      const phi = j * (Math.PI * 2 / 180);
-      const localPoint = envelopePoint(wave.theta, phi);
-      const p = projectRadiationPoint(localPoint, scale, canvasRect, heroRect);
-
-      points.push(`${j === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`);
-    }
-
-    wave.path.setAttribute("d", points.join(" ") + " Z");
-    wave.path.setAttribute("opacity", (reduceMotion ? 0.08 : 0.26 * fade).toFixed(3));
-  }
-
-  // A few projected meridians help preserve the directional feel
-  // without inventing a separate 2D radiation model.
-  for (const meridian of heroMeridians) {
-    const progress = reduceMotion ? meridian.offset : (meridian.offset + time * 0.10) % 1;
-    const scale = 0.72 + progress * 10.8;
-    const fade = Math.pow(Math.sin(Math.PI * progress), 1.12);
-
-    const points = [];
-
-    for (let j = 0; j <= 120; j++) {
-      const theta = j * (Math.PI / 120);
-      const localPoint = envelopePoint(theta, meridian.phi);
-      const p = projectRadiationPoint(localPoint, scale, canvasRect, heroRect);
-
-      points.push(`${j === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`);
-    }
-
-    meridian.path.setAttribute("d", points.join(" "));
-    meridian.path.setAttribute("opacity", (reduceMotion ? 0.05 : 0.13 * fade).toFixed(3));
-  }
-}
-
-/* =========================================
-   6. DRAG TO ROTATE
-   ========================================= */
-
-const canvas = renderer.domElement;
+const canvas = container;
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
@@ -425,7 +321,7 @@ canvas.style.touchAction = "none";
 canvas.addEventListener("pointerdown", (event) => {
   if (event.pointerType === "mouse" && event.button !== 0) return;
 
-  const rect = canvas.getBoundingClientRect();
+  const rect = renderer.domElement.getBoundingClientRect();
 
   pointer.x = 2 * (event.clientX - rect.left) / rect.width - 1;
   pointer.y = 1 - 2 * (event.clientY - rect.top) / rect.height;
@@ -469,22 +365,50 @@ canvas.addEventListener("lostpointercapture", () => {
 });
 
 /* =========================================
-   7. RESIZE AND ANIMATION
+   6. RESPONSIVE CAMERA
    ========================================= */
 
 function resize() {
-  const width = container.clientWidth;
-  const height = container.clientHeight;
+  const overlayRect = overlay.getBoundingClientRect();
+  const visualRect = container.getBoundingClientRect();
 
-  if (width < 1 || height < 1) return;
+  if (overlayRect.width < 1 || overlayRect.height < 1) return;
 
-  camera.aspect = width / height;
+  const aspect = overlayRect.width / overlayRect.height;
+  const visibleHeight = 9.4;
+  const visibleWidth = visibleHeight * aspect;
+
+  camera.left = -visibleWidth / 2;
+  camera.right = visibleWidth / 2;
+  camera.top = visibleHeight / 2;
+  camera.bottom = -visibleHeight / 2;
+
+  // Keep the antenna at the center of the right-hand column.
+  // Camera is positioned far away to avoid near-plane clipping.
+  camera.position.copy(center).addScaledVector(viewingAxis, 120);
+  camera.lookAt(center);
+  camera.updateMatrixWorld(true);
+
+  const x = (visualRect.left + visualRect.width / 2 - overlayRect.left) / overlayRect.width;
+  const y = (visualRect.top + visualRect.height / 2 - overlayRect.top) / overlayRect.height;
+
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+
+  camera.position.addScaledVector(right, -(x - 0.5) * visibleWidth);
+  camera.position.addScaledVector(up, (y - 0.5) * visibleHeight);
   camera.updateProjectionMatrix();
-  renderer.setSize(width, height);
+  camera.updateMatrixWorld(true);
+
+  renderer.setSize(overlayRect.width, overlayRect.height);
 }
 
 window.addEventListener("resize", resize);
 resize();
+
+/* =========================================
+   7. ANIMATION
+   ========================================= */
 
 const clock = new THREE.Clock();
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -494,20 +418,15 @@ function animate() {
 
   const time = clock.getElapsedTime();
 
-  // Smooth antenna rotation
   antenna.rotation.y = THREE.MathUtils.lerp(antenna.rotation.y, targetRotationY, reduceMotion ? 1 : 0.12);
   antenna.rotation.x = THREE.MathUtils.lerp(antenna.rotation.x, targetRotationX, reduceMotion ? 1 : 0.12);
 
-  // Subtle local 3D radiation
-  for (const wave of nearWavefronts) {
-    const progress = reduceMotion ? wave.offset : (wave.offset + time * 0.14) % 1;
+  for (const wave of wavefronts) {
+    const progress = reduceMotion ? wave.offset : (wave.offset + time * 0.07) % 1;
 
-    wave.group.scale.setScalar(0.7 + progress * 6.0);
-    wave.material.opacity = reduceMotion ? 0.035 : 0.12 * Math.sin(Math.PI * progress);
+    wave.shell.scale.setScalar(0.6 + progress * 34);
+    wave.material.opacity = reduceMotion ? 0.035 : 0.19 * Math.pow(Math.sin(Math.PI * progress), 1.2);
   }
-
-  // Full-home directional radiation
-  updateHeroRadiation(time, reduceMotion);
 
   renderer.render(scene, camera);
 }
