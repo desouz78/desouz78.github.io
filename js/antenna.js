@@ -133,7 +133,7 @@ function sphere(position, radius, material) {
     new THREE.SphereGeometry(radius, 20, 20),
     material
   );
-  mesh.position.set(...position);xfcare
+  mesh.position.set(...position);
   antenna.add(mesh);
   return mesh;
 }
