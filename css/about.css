@@ -220,9 +220,9 @@
 
 .about-intro {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 245px;
+  grid-template-columns: minmax(0, 1fr) 290px;
   align-items: start;
-  gap: 36px;
+  gap: 42px;
   max-width: none;
 }
 
@@ -260,7 +260,13 @@ main.container {
   height: 100%;
   overflow: visible;
   pointer-events: none;
-  z-index: 4;
+  z-index: 2;
+}
+
+.academic-strip,
+.about-story {
+  position: relative;
+  z-index: 3;
 }
 
 .transmission-cable path {
@@ -270,24 +276,23 @@ main.container {
 }
 
 .cable-jacket {
-  stroke: #182638;
-  stroke-width: 17;
+  stroke: #1a2431;
+  stroke-width: 28;
 }
 
 .cable-metal {
-  stroke: #53647b;
-  stroke-width: 12;
+  stroke: #55657b;
+  stroke-width: 21;
 }
 
 .cable-core {
-  stroke: #0b1829;
-  stroke-width: 7;
+  stroke: #0b1624;
+  stroke-width: 13;
 }
 
 .cable-highlight {
-  stroke: #e98a55;
-  stroke-width: 1.5;
-  opacity: 0.7;
+  stroke: rgba(239, 138, 82, 0.85);
+  stroke-width: 2.2;
 }
 
 @media (max-width: 900px) {

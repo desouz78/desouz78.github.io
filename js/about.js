@@ -108,37 +108,49 @@ function drawTransmissionCable() {
   const academicY = y(academic.top) + 4;
   const personalY = y(personal.top) + 4;
 
-  // One continuous path: mast -> photo -> timer -> chapters.
+  
+  // Straight cable segments connecting the antenna and About.
+  const pad = 14;
+
+  const photoTopX = pc;
+  const photoTopY = pt - pad;
+
+  const photoRightX = pr + pad;
+  const photoLeftX = pl - pad;
+  const photoBottomY = pb + pad;
+  const photoExitY = pt + (pb - pt) * 0.56;
+
+  const timerLeftX = tl - pad;
+  const timerRightX = tr + pad;
+  const timerTopY = tt - pad;
+  const timerBottomY = tb + pad;
+
+  const downAfterTimerY = academicY - 28;
+
   const d = [
+    // From the antenna
     `M ${sx} ${sy}`,
-    `C ${sx} ${sy + 65}, ${pc} ${pt - 65}, ${pc} ${pt - 9}`,
+    `L ${sx} ${photoTopY}`,
+    `L ${photoTopX} ${photoTopY}`,
 
-    // Around the portrait
-    `L ${pr - 12} ${pt - 9}`,
-    `Q ${pr + 9} ${pt - 9}, ${pr + 9} ${pt + 12}`,
-    `L ${pr + 9} ${pb - 12}`,
-    `Q ${pr + 9} ${pb + 9}, ${pr - 12} ${pb + 9}`,
-    `L ${pl + 12} ${pb + 9}`,
-    `Q ${pl - 9} ${pb + 9}, ${pl - 9} ${pb - 12}`,
-    `L ${pl - 9} ${exitY}`,
+    // Around the photograph
+    `L ${photoRightX} ${photoTopY}`,
+    `L ${photoRightX} ${photoBottomY}`,
+    `L ${photoLeftX} ${photoBottomY}`,
+    `L ${photoLeftX} ${photoExitY}`,
 
-    // From portrait to counter
-    `C ${pl - 9} ${exitY - 28}, ${tr + 34} ${tt - 9}, ${tr + 9} ${tt - 9}`,
+    // Toward the counter
+    `L ${timerRightX} ${photoExitY}`,
+    `L ${timerRightX} ${timerTopY}`,
+    `L ${timerLeftX} ${timerTopY}`,
+    `L ${timerLeftX} ${timerBottomY}`,
+    `L ${timerRightX} ${timerBottomY}`,
 
-    // Around the counter
-    `L ${tl + 12} ${tt - 9}`,
-    `Q ${tl - 9} ${tt - 9}, ${tl - 9} ${tt + 12}`,
-    `L ${tl - 9} ${tb - 12}`,
-    `Q ${tl - 9} ${tb + 9}, ${tl + 12} ${tb + 9}`,
-    `L ${tr + 9} ${tb + 9}`,
-
-    // Continue toward the academic chapter
-    `C ${tr + 45} ${tb + 29}, ${tr + 45} ${academicY - 67}, ${tr + 15} ${academicY - 65}`,
-    `C ${tr - 40} ${academicY - 63}, ${railX + 95} ${academicY - 35}, ${railX} ${academicY - 30}`,
+    // Toward the academic section
+    `L ${timerRightX} ${downAfterTimerY}`,
+    `L ${railX} ${downAfterTimerY}`,
     `L ${railX} ${academicY}`,
-
-    // Continue toward the personal chapter
-    `C ${railX + 25} ${academicY + 65}, ${railX - 25} ${personalY - 65}, ${railX} ${personalY}`
+    `L ${railX} ${personalY}`
   ].join(" ");
 
   cable.setAttribute("viewBox", `0 0 ${base.width} ${base.height}`);
