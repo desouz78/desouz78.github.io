@@ -309,3 +309,74 @@ main.container {
   }
 }
 
+/* ===== Cable anchor under antenna ===== */
+.hero-visual {
+  position: relative;
+}
+
+#cable-start-anchor {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  right: 108px;   /* ajuste fino depois */
+  bottom: -6px;   /* ajuste fino depois */
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ===== Cable layer ===== */
+.about-cable-layer,
+.transmission-cable-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+
+/* o bloco CONNECT / RESEARCH INTERESTS / BACKGROUND fica por cima */
+.hero-academic-strip,
+.about-meta-row {
+  position: relative;
+  z-index: 4;
+}
+
+/* ===== Glass cable ===== */
+.transmission-cable-outer {
+  fill: none;
+  stroke: rgba(33, 52, 74, 0.96);
+  stroke-width: 34;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.transmission-cable-glass {
+  fill: none;
+  stroke: rgba(188, 220, 255, 0.16);
+  stroke-width: 26;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.transmission-cable-highlight {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.transmission-cable-core {
+  fill: none;
+  stroke: rgba(255, 146, 74, 0.92);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* foto um pouco maior */
+.identity-photo-frame,
+.identity-photo-shell,
+.about-photo-frame {
+  width: clamp(240px, 24vw, 320px);
+}

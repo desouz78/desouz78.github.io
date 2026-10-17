@@ -440,7 +440,7 @@ window.getAntennaCableAnchor = () => {
   camera.updateMatrixWorld(true);
 
   const point = antenna.localToWorld(
-    new THREE.Vector3(0, -3.35, -0.1)
+    new THREE.Vector3(0, -3.15, -0.1)
   ).project(camera);
 
   const rect = renderer.domElement.getBoundingClientRect();
