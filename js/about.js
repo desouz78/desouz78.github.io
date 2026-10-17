@@ -69,6 +69,9 @@ const main = document.querySelector("main.container");
 const cable = document.getElementById("transmission-cable");
 const cablePaths = cable ? [...cable.querySelectorAll("path")] : [];
 
+const progressMask = cable ? cable.querySelector("#cable-progress-mask") : null;
+const progressPath = cable ? cable.querySelector(".cable-progress-path") : null;
+
 const portrait = document.getElementById("about-photo");
 const counter = document.querySelector(".about-timer");
 const about = document.querySelector(".about-story");
@@ -160,6 +163,28 @@ function drawTransmissionCable() {
 
   for (const path of cablePaths) {
     path.setAttribute("d", d);
+  }
+
+  // Reveal the moving signals as the visitor scrolls.
+  if (progressMask && progressPath) {
+    progressMask.setAttribute("x", "-50");
+    progressMask.setAttribute("y", "-50");
+    progressMask.setAttribute("width", base.width + 100);
+    progressMask.setAttribute("height", base.height + 100);
+
+    const length = progressPath.getTotalLength();
+
+    const start = anchor.y + window.scrollY;
+    const end = personal.bottom + window.scrollY;
+    const position = window.scrollY + window.innerHeight * 0.55;
+
+    const progress = Math.max(
+      0,
+      Math.min(1, (position - start) / Math.max(1, end - start))
+    );
+
+    progressPath.style.strokeDasharray =
+      `${(length * progress).toFixed(1)} ${length.toFixed(1)}`;
   }
 }
 

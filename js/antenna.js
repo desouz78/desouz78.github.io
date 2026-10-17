@@ -76,6 +76,15 @@ const graphite = new THREE.MeshStandardMaterial({
   roughness: 0.65
 });
 
+const socketGlass = new THREE.MeshStandardMaterial({
+  color: 0x33485e,
+  metalness: 0.55,
+  roughness: 0.35,
+  transparent: true,
+  opacity: 0.72,
+  depthWrite: false
+});
+
 const orangeGlow = new THREE.MeshStandardMaterial({
   color: 0xff8d4d,
   emissive: 0xff6323,
@@ -122,7 +131,7 @@ function sphere(position, radius, material) {
 
 // Mast and longitudinal booms
 rod([0, -2.8, -0.1], [0, -0.15, -0.1], 0.12, darkMetal, 18);
-rod([0, -3.35, -0.1], [0, -2.8, -0.1], 0.18, graphite, 18);
+rod([0, -3.35, -0.1], [0, -2.8, -0.1], 0.18, socketGlass, 18);
 rod([-0.1, 0.1, -3.6], [0.35, 0.25, 3.2], 0.075, darkMetal, 18);
 rod([-0.08, -0.12, -3.45], [0.32, 0.02, 3.0], 0.04, silverSoft);
 
@@ -453,7 +462,7 @@ window.getAntennaCableAnchor = () => {
     };
   }
 
-  const inside = projectPoint(-2.95);
+  const inside = projectPoint(-3.15);
   const outside = projectPoint(-3.60);
 
   return {
