@@ -223,20 +223,20 @@ if (particleLayer && signalPath) {
   const svgNS = "http://www.w3.org/2000/svg";
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const particles = Array.from({ length: 240 }, () => {
+  const particles = Array.from({ length: 2500 }, () => {
     const dot = document.createElementNS(svgNS, "circle");
 
-    dot.setAttribute("r", (0.7 + Math.random() * 1.5).toFixed(2));
+    dot.setAttribute("r", (0.45 + Math.random() * 1.25).toFixed(2));
     dot.setAttribute("fill", signalColors[Math.floor(Math.random() * signalColors.length)]);
-    dot.setAttribute("opacity", (0.4 + Math.random() * 0.6).toFixed(2));
+    dot.setAttribute("opacity", (0.45 + Math.random() * 0.5).toFixed(2));
 
     particleLayer.appendChild(dot);
 
     return {
       dot,
       phase: Math.random(),
-      lane: (Math.random() - 0.5) * 24,
-      speed: 55 + Math.random() * 95,
+      lane: (Math.random() - 0.5) * 27,
+      speed: 35 + Math.random() * 110,
       jitter: Math.random() * Math.PI * 2
     };
   });
@@ -262,11 +262,11 @@ if (particleLayer && signalPath) {
           const magnitude = Math.max(0.001, Math.hypot(dx, dy));
 
           const normalX = -dy / magnitude;
-          const normalY = dx / magnitude;
+          const normalY = dx / magnitude;    
 
           const jitter = reduceMotion
             ? 0
-            : Math.sin(time * 0.006 + particle.jitter) * 1.2;
+            : Math.sin(time * 0.008 + particle.jitter) * 2.2;
 
           const offset = particle.lane + jitter;
 

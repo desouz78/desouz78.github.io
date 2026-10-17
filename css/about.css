@@ -291,14 +291,12 @@ main.container {
 }
 
 .cable-highlight {
-  stroke: rgba(230, 245, 255, 0.20);
-  stroke-width: 1.4;
+  display: none;
 }
 
 /* Distributed light particles inside the cable */
-
 .cable-particles circle {
-  filter: drop-shadow(0 0 2px rgba(255, 120, 45, 0.55));
+  filter: drop-shadow(0 0 3px rgba(255, 120, 45, 0.75));
 }
 
 @media (max-width: 900px) {
