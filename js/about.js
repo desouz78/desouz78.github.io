@@ -85,9 +85,11 @@ function drawTransmissionCable() {
   const base = main.getBoundingClientRect();
   const image = portrait.getBoundingClientRect();
   const clock = counter.getBoundingClientRect();
-  const academic = chapters[1].getBoundingClientRect();
+  const academic = chapters[1].getBoundingClientRect();  
   const personal = chapters[2].getBoundingClientRect();
   const story = about.getBoundingClientRect();
+  const academicPhotoRect = chapters[1].querySelector(".about-academic-photo").getBoundingClientRect();
+  const academicCopyRect = chapters[1].querySelector(".about-academic-copy").getBoundingClientRect();
 
   const x = value => value - base.left;
   const y = value => value - base.top;
@@ -132,6 +134,11 @@ function drawTransmissionCable() {
 
   const downAfterTimerY = academicY - 58;
 
+  const academicBottomY = y(Math.max(academicPhotoRect.bottom, academicCopyRect.bottom)) + 26;
+
+  const academicRightX = x(academicCopyRect.right) + 28;
+  const personalReturnY = personalY - 4;
+
     const d = [
     // Follow the mast before turning downward
     `M ${sx} ${sy}`,
@@ -156,8 +163,17 @@ function drawTransmissionCable() {
     `L ${timerRightX} ${downAfterTimerY}`,
     `L ${railX} ${downAfterTimerY}`,
     `L ${railX} ${academicY}`,
+
+    // Around the academic photo and text
+    `L ${railX} ${academicBottomY}`,
+    `L ${academicRightX} ${academicBottomY}`,
+    `L ${academicRightX} ${personalReturnY}`,
+    `L ${railX} ${personalReturnY}`,
+
+    // Continue toward Beyond the Lab
     `L ${railX} ${personalY}`
   ].join(" ");
+
 
   cable.setAttribute("viewBox", `0 0 ${base.width} ${base.height}`);
 

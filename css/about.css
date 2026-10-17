@@ -490,3 +490,21 @@ main.container {
 .about-academic-copy a:hover {
   text-decoration-color: var(--accent);
 }
+
+/* Teaching course list */
+
+.about-academic-copy .teaching-courses {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.teaching-courses li + li {
+  margin-top: 6px;
+}
+
+.teaching-courses li::marker {
+  color: var(--accent);
+}
