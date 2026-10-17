@@ -91,6 +91,8 @@ function drawTransmissionCable() {
 
   const sx = x(anchor.x);
   const sy = y(anchor.y);
+  const ex = x(anchor.exitX);
+  const ey = y(anchor.exitY);
 
   const pl = x(image.left);
   const pr = x(image.right);
@@ -127,10 +129,11 @@ function drawTransmissionCable() {
 
   const downAfterTimerY = academicY - 28;
 
-  const d = [
-    // From the antenna
+    const d = [
+    // Follow the mast before turning downward
     `M ${sx} ${sy}`,
-    `L ${sx} ${photoTopY}`,
+    `L ${ex} ${ey}`,
+    `L ${ex} ${photoTopY}`,
     `L ${photoTopX} ${photoTopY}`,
 
     // Around the photograph
