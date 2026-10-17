@@ -7,9 +7,9 @@
   position: relative;
   max-width: 900px;
   margin: 80px auto 100px;
-  padding: 70px 20px 80px 48px;
+  padding: 120px 20px 80px 48px;
   border-top: 1px solid var(--border);
-  scroll-margin-top: 110px;
+  scroll-margin-top: 0;
 }
 
 /* Transmission line */
@@ -58,18 +58,6 @@
 
 .about-chapter:last-child {
   margin-bottom: 0;
-}
-
-.about-chapter::before {
-  content: "";
-  position: absolute;
-  top: 4px;
-  left: -44px;
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--accent);
-  border-radius: 50%;
-  background: var(--bg);
 }
 
 .about-kicker {
@@ -467,4 +455,38 @@ main.container {
     grid-column: 1;
     grid-row: 2;
   }
+}
+
+
+/* =========================================
+   ACADEMIC DETAILS
+   ========================================= */
+
+.academic-detail {
+  margin-top: 22px;
+}
+
+.academic-detail-label {
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.about-academic-copy .academic-detail p {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.about-academic-copy a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: rgba(233, 138, 85, 0.45);
+  text-underline-offset: 4px;
+}
+
+.about-academic-copy a:hover {
+  text-decoration-color: var(--accent);
 }
