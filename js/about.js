@@ -130,7 +130,7 @@ function drawTransmissionCable() {
   const timerTopY = tt - pad;
   const timerBottomY = tb + pad;
 
-  const downAfterTimerY = academicY - 28;
+  const downAfterTimerY = academicY - 58;
 
     const d = [
     // Follow the mast before turning downward
