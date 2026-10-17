@@ -432,3 +432,23 @@ function animate() {
 }
 
 animate();
+
+
+// Expose the real 3D position of the mast's lower connector.
+window.getAntennaCableAnchor = () => {
+  antenna.updateMatrixWorld(true);
+  camera.updateMatrixWorld(true);
+
+  const point = antenna.localToWorld(
+    new THREE.Vector3(0, -3.35, -0.1)
+  ).project(camera);
+
+  const rect = renderer.domElement.getBoundingClientRect();
+
+  return {
+    x: rect.left + (point.x + 1) * rect.width / 2,
+    y: rect.top + (1 - point.y) * rect.height / 2
+  };
+};
+
+window.dispatchEvent(new Event("antenna-cable-ready"));
