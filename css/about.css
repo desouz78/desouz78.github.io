@@ -296,7 +296,7 @@ main.container {
 
 /* Distributed light particles inside the cable */
 .cable-particles circle {
-  filter: drop-shadow(0 0 3px rgba(255, 120, 45, 0.75));
+  filter: none;
 }
 
 @media (max-width: 900px) {
