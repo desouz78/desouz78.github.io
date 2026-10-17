@@ -391,7 +391,7 @@ main.container {
    ========================================= */
 
 .about-evidence {
-  margin-top: 52px;
+  margin-top: 26px;
   max-width: 590px;
 }
 
@@ -407,4 +407,63 @@ main.container {
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.8;
+}
+
+
+/* =========================================
+   ACADEMIC SECTION
+   ========================================= */
+
+.about-academic {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 42px;
+  align-items: start;
+  max-width: none;
+}
+
+.about-academic-photo {
+  grid-column: 1;
+  grid-row: 1;
+  width: min(100%, 330px);
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.about-academic-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-academic-copy {
+  grid-column: 2;
+  grid-row: 1;
+  transform: translateY(-195px);
+}
+
+.about-academic-copy h3 {
+  font-size: clamp(1.9rem, 2.6vw, 2.6rem);
+}
+
+@media (max-width: 900px) {
+  .about-academic {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .about-academic-copy {
+    grid-column: 1;
+    grid-row: 1;
+    transform: none;
+  }
+
+  .about-academic-photo {
+    grid-column: 1;
+    grid-row: 2;
+  }
 }
