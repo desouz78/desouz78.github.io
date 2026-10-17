@@ -226,7 +226,7 @@ if (particleLayer && signalPath) {
   const particles = Array.from({ length: 420 }, () => {
     const dot = document.createElementNS(svgNS, "circle");
 
-    dot.setAttribute("r", (1.4 + Math.random() * 1.7).toFixed(2));
+    dot.setAttribute("r", (2.3 + Math.random() * 2.4).toFixed(2));
     dot.setAttribute("fill", signalColors[Math.floor(Math.random() * signalColors.length)]);
     dot.setAttribute("opacity", (0.45 + Math.random() * 0.5).toFixed(2));
 
