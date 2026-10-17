@@ -174,13 +174,24 @@ function drawTransmissionCable() {
 
     const length = progressPath.getTotalLength();
 
-    const start = anchor.y + window.scrollY;
-    const end = personal.bottom + window.scrollY;
-    const position = window.scrollY + window.innerHeight * 0.55;
+    const maxScroll = Math.max(
+      1,
+      document.documentElement.scrollHeight - window.innerHeight
+    );
+
+    const cableStart = anchor.y + window.scrollY;
+
+    const startScroll = Math.max(
+      0,
+      Math.min(maxScroll - 1, cableStart - window.innerHeight * 0.65)
+    );
 
     const progress = Math.max(
       0,
-      Math.min(1, (position - start) / Math.max(1, end - start))
+      Math.min(
+        1,
+        (window.scrollY - startScroll) / Math.max(1, maxScroll - startScroll)
+      )
     );
 
     progressPath.style.strokeDasharray =
@@ -198,3 +209,78 @@ if (cable) {
   // Also follows the antenna's smooth rotation after dragging.
   setInterval(drawTransmissionCable, 120);
 }
+
+
+/* =========================================
+   DYNAMIC SIGNAL PARTICLES
+   ========================================= */
+
+const particleLayer = cable?.querySelector(".cable-particles");
+const signalPath = progressPath;
+const signalColors = ["#ff642e", "#ff8b42", "#ffb46a", "#ffe0a8"];
+
+if (particleLayer && signalPath) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const particles = Array.from({ length: 240 }, () => {
+    const dot = document.createElementNS(svgNS, "circle");
+
+    dot.setAttribute("r", (0.7 + Math.random() * 1.5).toFixed(2));
+    dot.setAttribute("fill", signalColors[Math.floor(Math.random() * signalColors.length)]);
+    dot.setAttribute("opacity", (0.4 + Math.random() * 0.6).toFixed(2));
+
+    particleLayer.appendChild(dot);
+
+    return {
+      dot,
+      phase: Math.random(),
+      lane: (Math.random() - 0.5) * 24,
+      speed: 55 + Math.random() * 95,
+      jitter: Math.random() * Math.PI * 2
+    };
+  });
+
+  let lastFrame = 0;
+
+  function animateSignals(time) {
+    if (time - lastFrame >= 40 || reduceMotion) {
+      const length = signalPath.getTotalLength();
+
+      if (length > 1) {
+        for (const particle of particles) {
+          const distance = (
+            particle.phase * length +
+            (reduceMotion ? 0 : time) * particle.speed / 1000
+          ) % length;
+
+          const point = signalPath.getPointAtLength(distance);
+          const next = signalPath.getPointAtLength(Math.min(length, distance + 2));
+
+          const dx = next.x - point.x;
+          const dy = next.y - point.y;
+          const magnitude = Math.max(0.001, Math.hypot(dx, dy));
+
+          const normalX = -dy / magnitude;
+          const normalY = dx / magnitude;
+
+          const jitter = reduceMotion
+            ? 0
+            : Math.sin(time * 0.006 + particle.jitter) * 1.2;
+
+          const offset = particle.lane + jitter;
+
+          particle.dot.setAttribute("cx", (point.x + normalX * offset).toFixed(1));
+          particle.dot.setAttribute("cy", (point.y + normalY * offset).toFixed(1));
+        }
+      }
+
+      lastFrame = time;
+    }
+
+    if (!reduceMotion) requestAnimationFrame(animateSignals);
+  }
+
+  requestAnimationFrame(animateSignals);
+}
+

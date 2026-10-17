@@ -505,7 +505,7 @@
       }
     }
     </style>
-  <link rel="stylesheet" href="./css/about.css?v=5">
+  <link rel="stylesheet" href="./css/about.css?v=6">
 </head>
 
 <body>
@@ -562,7 +562,7 @@
           class="cable-progress-path"
           fill="none"
           stroke="white"
-          stroke-width="16"
+          stroke-width="30"
         ></path>
       </mask>
     </defs>
@@ -574,11 +574,7 @@
     <path class="cable-highlight"></path>
 
     <!-- Moving signals, revealed by scrolling -->
-    <g mask="url(#cable-progress-mask)">
-      <path class="cable-wave cable-wave-1"></path>
-      <path class="cable-wave cable-wave-2"></path>
-      <path class="cable-wave cable-wave-3"></path>
-    </g>
+    <g class="cable-particles" mask="url(#cable-progress-mask)"></g>
 
   </svg>
   
@@ -695,8 +691,8 @@
        THREE.JS ANTENNA MODULE
        ========================================= -->
 
-  <script type="module" src="./js/antenna.js?v=14"></script>
-  <script src="./js/about.js?v=14"></script>
+  <script type="module" src="./js/antenna.js?v=15"></script>
+  <script src="./js/about.js?v=15"></script>
 
 </body>
 </html>

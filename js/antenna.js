@@ -462,8 +462,8 @@ window.getAntennaCableAnchor = () => {
     };
   }
 
-  const inside = projectPoint(-3.15);
-  const outside = projectPoint(-3.60);
+  const inside = projectPoint(-3.35);
+  const outside = projectPoint(-3.75);
 
   return {
     x: inside.x,
