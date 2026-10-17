@@ -223,7 +223,7 @@ if (particleLayer && signalPath) {
   const svgNS = "http://www.w3.org/2000/svg";
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const particles = Array.from({ length: 2500 }, () => {
+  const particles = Array.from({ length: 1800 }, () => {
     const dot = document.createElementNS(svgNS, "circle");
 
     dot.setAttribute("r", (0.45 + Math.random() * 1.25).toFixed(2));
