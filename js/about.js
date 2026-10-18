@@ -193,10 +193,6 @@ function drawTransmissionCable() {
 
   ].join(" ");
 
-  ].join(" ");
-
-
-
   cable.setAttribute("viewBox", `0 0 ${base.width} ${base.height}`);
 
   for (const path of cablePaths) {
