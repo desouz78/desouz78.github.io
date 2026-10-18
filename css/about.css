@@ -572,3 +572,11 @@ main.container {
     scroll-snap-align: start;
   }
 }
+
+/* Personal section closing thought */
+
+.about-personal .about-personal-note {
+  margin-top: 14px;
+  color: #d7deea;
+  font-style: italic;
+}

@@ -142,9 +142,10 @@ function drawTransmissionCable() {
   const academicRightX = x(Math.max(academicCopyRect.right, personalGalleryRect?.right ?? academicCopyRect.right)) + 28;
 
   const personalEndY = personalGalleryRect
-    ? y(personalGalleryRect.bottom) + 20
-    : personalY + 100;
+    ? y(personalGalleryRect.bottom) + 36
+    : personalY + 120;
 
+  const personalLeftX = railX;
 
     const d = [
     // Follow the mast before turning downward
@@ -171,12 +172,18 @@ function drawTransmissionCable() {
     `L ${railX} ${downAfterTimerY}`,
     `L ${railX} ${academicY}`,
 
-    // Across the academic section, then down the right side
+    // Across the academic section
     `L ${railX} ${academicBottomY}`,
     `L ${academicRightX} ${academicBottomY}`,
-    `L ${academicRightX} ${personalEndY}`
+
+    // Down the right side of Beyond the Lab
+    `L ${academicRightX} ${personalEndY}`,
+
+    // Return beneath the personal photo gallery
+    `L ${personalLeftX} ${personalEndY}`
 
   ].join(" ");
+
 
 
   cable.setAttribute("viewBox", `0 0 ${base.width} ${base.height}`);
