@@ -508,3 +508,67 @@ main.container {
 .teaching-courses li::marker {
   color: var(--accent);
 }
+
+
+/* =========================================
+   BEYOND THE LAB
+   ========================================= */
+
+.about-personal {
+  max-width: none;
+}
+
+.about-personal > p {
+  max-width: 650px;
+}
+
+.personal-gallery {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 32px 38px 0 0;
+}
+
+.personal-card {
+  min-width: 0;
+  margin: 0;
+}
+
+.personal-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.personal-card:hover img {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+.personal-card figcaption {
+  margin-top: 10px;
+  color: var(--subtle);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .personal-gallery {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(170px, 55vw);
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 12px;
+    margin-right: 0;
+  }
+
+  .personal-card {
+    scroll-snap-align: start;
+  }
+}

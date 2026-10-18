@@ -136,8 +136,15 @@ function drawTransmissionCable() {
 
   const academicBottomY = y(Math.max(academicPhotoRect.bottom, academicCopyRect.bottom)) + 26;
 
-  const academicRightX = x(academicCopyRect.right) + 28;
-  const personalReturnY = personalY - 4;
+  const personalGallery = chapters[2].querySelector(".personal-gallery");
+  const personalGalleryRect = personalGallery?.getBoundingClientRect();
+
+  const academicRightX = x(Math.max(academicCopyRect.right, personalGalleryRect?.right ?? academicCopyRect.right)) + 28;
+
+  const personalEndY = personalGalleryRect
+    ? y(personalGalleryRect.bottom) + 20
+    : personalY + 100;
+
 
     const d = [
     // Follow the mast before turning downward
@@ -164,14 +171,11 @@ function drawTransmissionCable() {
     `L ${railX} ${downAfterTimerY}`,
     `L ${railX} ${academicY}`,
 
-    // Around the academic photo and text
+    // Across the academic section, then down the right side
     `L ${railX} ${academicBottomY}`,
     `L ${academicRightX} ${academicBottomY}`,
-    `L ${academicRightX} ${personalReturnY}`,
-    `L ${railX} ${personalReturnY}`,
+    `L ${academicRightX} ${personalEndY}`
 
-    // Continue toward Beyond the Lab
-    `L ${railX} ${personalY}`
   ].join(" ");
 
 
