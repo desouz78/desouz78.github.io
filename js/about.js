@@ -147,6 +147,11 @@ function drawTransmissionCable() {
 
   const personalLeftX = railX;
 
+  const scopePort = document.getElementById("hands-on-anchor");
+  const scopeRect = scopePort?.getBoundingClientRect();
+  const scopeX = scopeRect ? x(scopeRect.left + scopeRect.width / 2) : personalLeftX;
+  const scopeY = scopeRect ? y(scopeRect.top + scopeRect.height / 2) : personalEndY;
+
     const d = [
     // Follow the mast before turning downward
     `M ${sx} ${sy}`,
@@ -180,7 +185,13 @@ function drawTransmissionCable() {
     `L ${academicRightX} ${personalEndY}`,
 
     // Return beneath the personal photo gallery
-    `L ${personalLeftX} ${personalEndY}`
+    `L ${personalLeftX} ${personalEndY}`,
+
+    // Continue downward and connect to the oscilloscope
+    `L ${personalLeftX} ${scopeY}`,
+    `L ${scopeX} ${scopeY}`
+
+  ].join(" ");
 
   ].join(" ");
 
