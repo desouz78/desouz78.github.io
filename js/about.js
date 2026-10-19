@@ -72,6 +72,8 @@ const cablePaths = cable ? [...cable.querySelectorAll("path")] : [];
 const progressMask = cable ? cable.querySelector("#cable-progress-mask") : null;
 const progressPath = cable ? cable.querySelector(".cable-progress-path") : null;
 
+const signalFront = cable?.querySelector(".cable-signal-front");
+
 const portrait = document.getElementById("about-photo");
 const counter = document.querySelector(".about-timer");
 const about = document.querySelector(".about-story");
@@ -227,9 +229,16 @@ function drawTransmissionCable() {
         (window.scrollY - startScroll) / Math.max(1, maxScroll - startScroll)
       )
     );
+    
+    progressPath.style.strokeDasharray = `${(length * progress).toFixed(1)} ${length.toFixed(1)}`;
 
-    progressPath.style.strokeDasharray =
-      `${(length * progress).toFixed(1)} ${length.toFixed(1)}`;
+    if (signalFront) {
+      const frontStart = Math.max(0, length * progress - 24);
+      signalFront.style.strokeDasharray = `24 ${length + 24}`;
+      signalFront.style.strokeDashoffset = `${-frontStart}`;
+      signalFront.style.opacity = progress > 0.002 && progress < 0.999 ? "1" : "0";
+    }
+
   }
 }
 
@@ -243,78 +252,3 @@ if (cable) {
   // Also follows the antenna's smooth rotation after dragging.
   setInterval(drawTransmissionCable, 120);
 }
-
-
-/* =========================================
-   DYNAMIC SIGNAL PARTICLES
-   ========================================= */
-
-const particleLayer = cable?.querySelector(".cable-particles");
-const signalPath = progressPath;
-const signalColors = ["#c5764f", "#d99367", "#efb785"];
-
-if (particleLayer && signalPath) {
-  const svgNS = "http://www.w3.org/2000/svg";
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const particles = Array.from({ length: 420 }, () => {
-    const dot = document.createElementNS(svgNS, "circle");
-
-    dot.setAttribute("r", (2.3 + Math.random() * 2.4).toFixed(2));
-    dot.setAttribute("fill", signalColors[Math.floor(Math.random() * signalColors.length)]);
-    dot.setAttribute("opacity", (0.45 + Math.random() * 0.5).toFixed(2));
-
-    particleLayer.appendChild(dot);
-
-    return {
-      dot,
-      phase: Math.random(),
-      lane: (Math.random() - 0.5) * 27,
-      speed: 35 + Math.random() * 110,
-      jitter: Math.random() * Math.PI * 2
-    };
-  });
-
-  let lastFrame = 0;
-
-  function animateSignals(time) {
-    if (time - lastFrame >= 40 || reduceMotion) {
-      const length = signalPath.getTotalLength();
-
-      if (length > 1) {
-        for (const particle of particles) {
-          const distance = (
-            particle.phase * length +
-            (reduceMotion ? 0 : time) * particle.speed / 1000
-          ) % length;
-
-          const point = signalPath.getPointAtLength(distance);
-          const next = signalPath.getPointAtLength(Math.min(length, distance + 2));
-
-          const dx = next.x - point.x;
-          const dy = next.y - point.y;
-          const magnitude = Math.max(0.001, Math.hypot(dx, dy));
-
-          const normalX = -dy / magnitude;
-          const normalY = dx / magnitude;    
-
-          const jitter = reduceMotion
-            ? 0
-            : Math.sin(time * 0.008 + particle.jitter) * 2.2;
-
-          const offset = particle.lane + jitter;
-
-          particle.dot.setAttribute("cx", (point.x + normalX * offset).toFixed(1));
-          particle.dot.setAttribute("cy", (point.y + normalY * offset).toFixed(1));
-        }
-      }
-
-      lastFrame = time;
-    }
-
-    if (!reduceMotion) requestAnimationFrame(animateSignals);
-  }
-
-  requestAnimationFrame(animateSignals);
-}
-
