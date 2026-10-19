@@ -99,3 +99,39 @@
   .scope-connector-bar { gap: 15px; }
   .scope-display-bar { font-size: 0.48rem; }
 }
+
+
+/* =========================================
+   INTERACTIVE 3D INSTRUMENT
+   ========================================= */
+
+.instrument-stage { display: none; position: relative; width: 100%; height: clamp(460px, 58vw, 630px); }
+#instrument-scene { width: 100%; height: 100%; cursor: grab; touch-action: none; }
+#instrument-scene:active { cursor: grabbing; }
+#instrument-scene canvas { display: block; width: 100%; height: 100%; }
+
+.scope-shell.instrument-ready { margin-left: 0; padding: 0; border: none; border-radius: 0; background: transparent; box-shadow: none; }
+.scope-shell.instrument-ready::before { display: none; }
+.instrument-ready .scope-brandbar, .instrument-ready .scope-body, .instrument-ready .scope-connector-bar { display: none; }
+.instrument-ready .instrument-stage { display: block; }
+
+.instrument-ready .scope-input-port { position: absolute; width: 2px; height: 2px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; opacity: 0; transform: translate(-50%, -50%); pointer-events: none; }
+.instrument-ready .scope-input-port::after { display: none; }
+
+.instrument-hint { position: absolute; right: 20px; bottom: 14px; color: rgba(157, 179, 201, 0.65); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.65rem; letter-spacing: 0.08em; pointer-events: none; }
+
+.instrument-detail { display: none; grid-template-columns: 1fr auto; align-items: center; column-gap: 22px; row-gap: 8px; margin: 0 30px; padding: 20px 24px; border: 1px solid rgba(130, 169, 204, 0.2); background: rgba(7, 16, 31, 0.64); }
+.instrument-ready .instrument-detail { display: grid; }
+.instrument-detail > span { grid-column: 1 / -1; color: var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.67rem; letter-spacing: 0.08em; }
+.instrument-detail h3 { grid-column: 1; margin: 0; color: var(--text); font-size: 1.23rem; font-weight: 650; }
+.instrument-detail p { grid-column: 1; margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+.instrument-detail a { grid-column: 2; grid-row: 2 / 4; color: #e4ae86; font-size: 0.84rem; text-decoration: none; border-bottom: 1px solid rgba(228, 174, 134, 0.4); }
+.instrument-detail a[hidden] { display: none; }
+.instrument-detail a:hover { border-bottom-color: #e4ae86; }
+
+@media (max-width: 650px) {
+  .instrument-stage { height: 380px; }
+  .instrument-hint { right: 8px; bottom: 4px; font-size: 0.5rem; }
+  .instrument-detail { grid-template-columns: 1fr; margin: 0; padding: 16px; }
+  .instrument-detail a { grid-column: 1; grid-row: auto; width: fit-content; }
+}
