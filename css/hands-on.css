@@ -3,8 +3,8 @@
    HANDS-ON / SIGNAL ANALYSIS WORKBENCH
    ========================================= */
 
-.about-story { margin-bottom: 58px; }
-.hands-on-section { position: relative; z-index: 3; max-width: 1050px; margin: 28px auto 110px; padding: 24px 20px 30px; border-top: 1px solid var(--border); scroll-margin-top: 105px; }
+.about-story { margin-bottom: 0; padding-bottom: 20px; }
+.hands-on-section { position: relative; z-index: 3; max-width: 1050px; margin: 0 auto 110px; padding: 12px 20px 30px; border-top: 1px solid var(--border); scroll-margin-top: 105px; }
 .hands-on-heading { max-width: 730px; padding-left: 74px; margin-bottom: 35px; }
 .hands-on-heading h2 { margin: 0 0 18px; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 750; line-height: 1.08; letter-spacing: -0.055em; }
 .hands-on-heading p { max-width: 610px; color: var(--muted); font-size: 1rem; line-height: 1.75; }
