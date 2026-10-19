@@ -1,68 +1,101 @@
 
 /* =========================================
-   HANDS-ON / SIGNAL WORKBENCH
+   HANDS-ON / SIGNAL ANALYSIS WORKBENCH
    ========================================= */
 
-.hands-on-section { position: relative; z-index: 3; max-width: 1050px; margin: 75px auto 140px; padding: 38px 20px 30px; border-top: 1px solid var(--border); scroll-margin-top: 105px; }
-.hands-on-heading { max-width: 730px; padding-left: 74px; margin-bottom: 44px; }
-.hands-on-heading h2 { margin-bottom: 20px; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 750; line-height: 1.08; letter-spacing: -0.055em; }
-.hands-on-heading p { max-width: 600px; color: var(--muted); font-size: 1rem; line-height: 1.8; }
+.about-story { margin-bottom: 58px; }
+.hands-on-section { position: relative; z-index: 3; max-width: 1050px; margin: 28px auto 110px; padding: 24px 20px 30px; border-top: 1px solid var(--border); scroll-margin-top: 105px; }
+.hands-on-heading { max-width: 730px; padding-left: 74px; margin-bottom: 35px; }
+.hands-on-heading h2 { margin: 0 0 18px; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 750; line-height: 1.08; letter-spacing: -0.055em; }
+.hands-on-heading p { max-width: 610px; color: var(--muted); font-size: 1rem; line-height: 1.75; }
 
-/* Oscilloscope body */
+/* Instrument chassis */
 
-.scope-shell { position: relative; margin-left: 82px; padding: 18px; border: 1px solid rgba(155, 184, 216, 0.32); border-radius: 19px; background: linear-gradient(150deg, rgba(21, 36, 55, 0.97), rgba(8, 19, 35, 0.98)); box-shadow: inset 0 0 0 3px rgba(140, 170, 200, 0.035), 0 18px 36px rgba(0, 0, 0, 0.18); }
+.scope-shell { position: relative; margin-left: 82px; padding: 18px 18px 12px; border: 1px solid rgba(165, 187, 208, 0.42); border-radius: 13px; background: linear-gradient(145deg, #34485c 0%, #1d3045 7%, #17283b 48%, #0b192b 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.26), 0 22px 48px rgba(0, 0, 0, 0.3); }
+.scope-shell::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(255, 255, 255, 0.045); border-radius: 9px; pointer-events: none; }
 
-/* Transmission cable input */
+/* Cable connection */
 
-.scope-input-port { position: absolute; left: -18px; top: 50%; width: 36px; height: 36px; transform: translateY(-50%); border: 6px solid #62778d; border-radius: 50%; background: #081322; box-shadow: 0 0 0 4px #142539, inset 0 0 0 2px rgba(220, 238, 255, 0.2); z-index: 4; }
-.scope-input-port::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #ff9655; box-shadow: 0 0 12px rgba(255, 135, 70, 0.55); }
+.scope-input-port { position: absolute; left: -18px; top: 50%; width: 36px; height: 36px; transform: translateY(-50%); border: 6px solid #71869a; border-radius: 50%; background: #081322; box-shadow: 0 0 0 4px #192b3e, inset 0 0 0 2px rgba(220, 238, 255, 0.22); z-index: 4; }
+.scope-input-port::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #ff9655; box-shadow: 0 0 10px rgba(255, 135, 70, 0.45); }
 
-/* Oscilloscope layout */
+/* Instrument identification */
 
-.scope-topbar, .scope-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--subtle); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.68rem; letter-spacing: 0.08em; }
-.scope-topbar { margin-bottom: 16px; }
-.scope-footer { margin-top: 16px; }
-.scope-status { color: var(--accent); }
-.scope-body { display: grid; grid-template-columns: minmax(0, 1fr) 104px; gap: 18px; }
+.scope-brandbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; padding: 0 3px; }
+.scope-brand { display: flex; align-items: center; gap: 13px; }
+.scope-logo { display: grid; place-items: center; width: 36px; height: 34px; border: 1px solid rgba(215, 229, 245, 0.32); color: #e8eff7; font-size: 0.9rem; font-weight: 800; }
+.scope-brand strong { display: block; color: #e7edf5; font-size: 0.85rem; font-weight: 650; letter-spacing: 0.025em; }
+.scope-brand small { display: block; margin-top: 4px; color: #8ba0b6; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.6rem; letter-spacing: 0.07em; }
+.scope-power { display: flex; align-items: center; gap: 8px; color: #a9bbce; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.62rem; letter-spacing: 0.06em; white-space: nowrap; }
+.scope-power-led { width: 7px; height: 7px; border-radius: 50%; background: #ff9655; box-shadow: 0 0 8px rgba(255, 145, 80, 0.55); }
 
-/* Screen */
+/* Display and control panel */
 
-.scope-screen { position: relative; min-height: 280px; overflow: hidden; border: 1px solid rgba(140, 181, 216, 0.25); background-color: #040d19; background-image: linear-gradient(rgba(125, 163, 192, 0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(125, 163, 192, 0.10) 1px, transparent 1px); background-size: 36px 36px; }
-.scope-screen-info { position: absolute; top: 15px; left: 18px; right: 18px; display: flex; justify-content: space-between; gap: 10px; color: #849db7; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.62rem; letter-spacing: 0.06em; }
-.scope-wave { position: absolute; inset: 14% 0; width: 100%; height: 72%; }
-.scope-wave path { fill: none; stroke: #ff9655; stroke-width: 2; filter: drop-shadow(0 0 5px rgba(255, 140, 70, 0.45)); }
+.scope-body { display: grid; grid-template-columns: minmax(0, 1fr) 158px; gap: 14px; }
+.scope-display { min-width: 0; padding: 9px; border: 3px solid #081220; border-radius: 5px; background: #020812; box-shadow: inset 0 0 0 1px rgba(145, 176, 205, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.scope-display-bar { display: flex; justify-content: space-between; gap: 10px; margin: 3px 5px 10px; color: #819ab2; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.56rem; letter-spacing: 0.04em; }
 
-/* Controls */
+/* Four independent project displays */
 
-.scope-controls { display: flex; flex-direction: column; align-items: center; justify-content: space-around; gap: 10px; color: var(--subtle); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.61rem; letter-spacing: 0.04em; }
-.scope-control-label { color: var(--accent); }
-.scope-knob { width: 37px; height: 37px; border-radius: 50%; border: 5px solid #263b51; background: linear-gradient(145deg, #8093a6, #34475b); box-shadow: 0 2px 7px rgba(0, 0, 0, 0.35); }
-.scope-indicator { width: 9px; height: 9px; border-radius: 50%; background: #ff9559; box-shadow: 0 0 12px rgba(255, 145, 75, 0.65); }
+.scope-screen-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 2px; border: 1px solid #31485e; background: #23384d; }
+.scope-channel { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 174px; padding: 12px; background-color: #040f1c; background-image: linear-gradient(rgba(85, 132, 168, 0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(85, 132, 168, 0.09) 1px, transparent 1px); background-size: 25px 25px; transition: background-color 0.2s; }
+.scope-channel:hover { background-color: #091a2a; }
+.scope-channel-header { display: flex; justify-content: space-between; gap: 8px; color: #8babc4; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.57rem; letter-spacing: 0.035em; }
+.scope-public { color: #a1c8b7; }
+.scope-private, .scope-standby { color: #8d9cae; }
+.scope-trace { width: 100%; height: 67px; }
+.scope-trace path { fill: none; stroke: #f19d65; stroke-width: 1.55; stroke-linejoin: round; stroke-linecap: round; }
+.scope-network path { stroke: #85b3ce; stroke-width: 1.2; }
+.scope-network circle { fill: #f0ae79; }
+.scope-channel-footer { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+.scope-channel-footer strong { color: #e4eaf2; font-size: 0.77rem; line-height: 1.3; font-weight: 600; }
+.scope-channel-footer a { width: fit-content; color: #e4ae86; font-size: 0.7rem; text-decoration: none; border-bottom: 1px solid rgba(228, 174, 134, 0.35); }
+.scope-channel-footer a:hover { border-bottom-color: #e4ae86; }
+.scope-channel-footer > span { color: #7e95aa; font-size: 0.68rem; }
+.scope-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; flex: 1; min-height: 67px; color: #6e8397; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.57rem; text-align: center; letter-spacing: 0.045em; }
+.scope-placeholder-icon { color: #7890a6; font-size: 1.6rem; font-family: ui-sans-serif, sans-serif; font-weight: 300; }
 
-/* Project modules */
+/* Physical control panel */
 
-.hands-on-projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 28px 0 0 82px; }
-.hands-project { min-width: 0; padding: 23px; border: 1px solid var(--border); background: rgba(7, 16, 31, 0.8); transition: border-color 0.2s; }
-.hands-project:hover { border-color: rgba(233, 138, 85, 0.45); }
-.hands-project-number { display: block; margin-bottom: 18px; color: var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.68rem; letter-spacing: 0.08em; }
-.hands-project h3 { margin-bottom: 12px; font-size: 1.2rem; line-height: 1.3; }
-.hands-project p { min-height: 96px; margin-bottom: 18px; color: var(--muted); font-size: 0.89rem; line-height: 1.7; }
-.hands-project a { color: var(--text); font-size: 0.86rem; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
-.hands-project-pending { color: var(--subtle); font-size: 0.83rem; }
+.scope-controls { display: flex; flex-direction: column; gap: 12px; padding: 8px; border: 1px solid rgba(177, 201, 223, 0.16); background: rgba(7, 17, 30, 0.25); }
+.scope-control-heading { padding-bottom: 8px; border-bottom: 1px solid rgba(180, 200, 220, 0.15); color: #b6c7d7; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.61rem; letter-spacing: 0.07em; text-align: center; }
+.scope-control-block { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #b3c4d4; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.6rem; letter-spacing: 0.04em; }
+.scope-control-block small { color: #7c93a7; font-size: 0.53rem; }
+.scope-knob { position: relative; width: 46px; height: 46px; border: 7px solid #31475d; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #a8bac9, #657e94 45%, #2b4156 76%); box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.27), 0 3px 8px rgba(0, 0, 0, 0.4); }
+.scope-knob::after { content: ""; position: absolute; top: 3px; left: 50%; width: 2px; height: 10px; transform: translateX(-50%); background: #e4eef6; border-radius: 2px; }
+.scope-knob-small { width: 38px; height: 38px; border-width: 6px; }
+.scope-keypad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-top: 3px; }
+.scope-keypad span { display: grid; place-items: center; min-height: 25px; padding: 3px 1px; border: 1px solid #4b6278; border-radius: 3px; background: linear-gradient(#465d72, #273a4f); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); color: #cfdae5; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.48rem; }
+.scope-keypad .scope-key-active { background: #355744; border-color: #688d6e; color: #d1ead4; }
+.scope-control-status { display: flex; justify-content: center; align-items: center; gap: 7px; margin-top: auto; color: #aabacd; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.54rem; }
+.scope-status-led { width: 6px; height: 6px; background: #e9a273; border-radius: 50%; box-shadow: 0 0 7px rgba(255, 151, 84, 0.4); }
+
+/* Lower connector panel */
+
+.scope-connector-bar { display: flex; align-items: center; gap: 26px; margin-top: 15px; padding: 13px 12px 3px; border-top: 1px solid rgba(200, 221, 240, 0.2); }
+.scope-connector { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.scope-socket { display: block; width: 29px; height: 29px; border: 6px ridge #8398aa; border-radius: 50%; background: radial-gradient(circle, #020912 0 25%, #364e65 27% 40%, #111f30 42%); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.27); }
+.scope-connector small { color: #98aabd; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.53rem; }
+.scope-connector-note { margin-left: auto; color: #8397aa; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.59rem; letter-spacing: 0.06em; }
 
 /* Responsive */
 
 @media (max-width: 900px) {
   .hands-on-heading { padding-left: 0; }
   .scope-shell { margin-left: 0; }
-  .hands-on-projects { grid-template-columns: 1fr; margin-left: 0; }
-  .hands-project p { min-height: 0; }
+  .scope-input-port { display: none; }
 }
 
 @media (max-width: 650px) {
-  .hands-on-section { margin-top: 70px; padding: 60px 4px 20px; }
+  .hands-on-section { margin-top: 25px; padding: 22px 4px 20px; }
+  .scope-shell { padding: 12px; }
   .scope-body { grid-template-columns: 1fr; }
   .scope-controls { display: none; }
-  .scope-screen { min-height: 200px; }
-  .scope-footer { font-size: 0.58rem; }
+  .scope-screen-grid { grid-template-columns: 1fr; }
+  .scope-channel { min-height: 160px; }
+  .scope-brand strong { font-size: 0.72rem; }
+  .scope-brand small, .scope-connector-note { display: none; }
+  .scope-power { font-size: 0.53rem; }
+  .scope-connector-bar { gap: 15px; }
+  .scope-display-bar { font-size: 0.48rem; }
 }

@@ -1,126 +1,127 @@
 
 <!-- =========================================
-     HANDS-ON
+     HANDS-ON / SIGNAL ANALYSIS WORKBENCH
      ========================================= -->
 
 <section class="hands-on-section" id="hands-on" aria-labelledby="hands-on-title">
 
   <div class="hands-on-heading">
     <span class="about-kicker">04 / Hands-on</span>
-
     <h2 id="hands-on-title">Curiosity, with a power switch.</h2>
-
-    <p>
-      Some questions are better answered by building something.
-      Here's a little of what I've been experimenting with.
-    </p>
+    <p>Some questions are better answered by building something. Here's a little of what I've been experimenting with.</p>
   </div>
 
-  <!-- SIGNAL WORKBENCH -->
   <div class="scope-shell">
 
-    <!-- Connection point for the existing transmission cable -->
+    <!-- Existing transmission cable connection -->
     <div class="scope-input-port" id="hands-on-anchor" aria-hidden="true"></div>
 
-    <div class="scope-topbar">
-      <span>LS / SIGNAL WORKBENCH</span>
-      <span class="scope-status">● DEMO MODE</span>
+    <!-- Instrument identification -->
+    <div class="scope-brandbar">
+      <div class="scope-brand">
+        <span class="scope-logo">LS.</span>
+        <div>
+          <strong>Signal Analysis Workbench</strong>
+          <small>LS-4004 / MULTI-PROJECT MONITOR</small>
+        </div>
+      </div>
+      <div class="scope-power"><span class="scope-power-led"></span> DEMO MODE</div>
     </div>
 
     <div class="scope-body">
 
-      <div class="scope-screen">
-        <div class="scope-screen-info">
-          <span>CH 01 / WAVEFORM</span>
-          <span>SIMULATED INPUT</span>
+      <!-- Main display -->
+      <div class="scope-display">
+        <div class="scope-display-bar">
+          <span>PROJECT MONITOR / FOUR CHANNELS</span>
+          <span>SIMULATED VISUALS</span>
         </div>
 
-        <svg class="scope-wave" viewBox="0 0 680 220"
-             preserveAspectRatio="none" aria-hidden="true">
-          <path d="
-            M 0 110
-            C 28 35, 55 35, 85 110
-            S 142 185, 170 110
-            S 227 35, 255 110
-            S 312 185, 340 110
-            S 397 35, 425 110
-            S 482 185, 510 110
-            S 567 35, 595 110
-            S 652 185, 680 110
-          "/>
-        </svg>
+        <div class="scope-screen-grid">
+
+          <!-- Channel 01: Speech -->
+          <article class="scope-channel">
+            <div class="scope-channel-header"><span>CH 01 / AUDIO</span><span class="scope-public">PUBLIC</span></div>
+            <svg class="scope-trace" viewBox="0 0 240 68" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M0 34 L10 33 L15 27 L21 45 L27 16 L33 52 L40 25 L47 37 L55 29 L63 43 L70 12 L76 57 L83 22 L90 40 L98 31 L106 36 L115 16 L122 51 L130 27 L139 38 L148 32 L158 44 L166 20 L174 49 L182 28 L190 35 L200 22 L209 45 L218 31 L230 34 L240 33"/>
+            </svg>
+            <div class="scope-channel-footer">
+              <strong>Speech Enhancement Lab</strong>
+              <a href="https://github.com/desouz78/speech-enhancement-lab" target="_blank" rel="noopener noreferrer">View repository ↗</a>
+            </div>
+          </article>
+
+          <!-- Channel 02: Rural Connectivity -->
+          <article class="scope-channel">
+            <div class="scope-channel-header"><span>CH 02 / DATA NETWORKS</span><span class="scope-public">PUBLIC</span></div>
+            <svg class="scope-trace scope-network" viewBox="0 0 240 68" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <path d="M18 38 L67 15 L111 41 L163 13 L214 34 M67 15 L72 53 L111 41 L148 55 L214 34 M111 41 L163 13 M163 13 L148 55"/>
+              <circle cx="18" cy="38" r="3"/><circle cx="67" cy="15" r="4"/><circle cx="72" cy="53" r="3"/><circle cx="111" cy="41" r="5"/><circle cx="163" cy="13" r="4"/><circle cx="148" cy="55" r="3"/><circle cx="214" cy="34" r="4"/>
+            </svg>
+            <div class="scope-channel-footer">
+              <strong>Brazilian Rural Connectivity</strong>
+              <a href="https://github.com/desouz78/Final-Project---Big-Data-Tools-and-Techniques" target="_blank" rel="noopener noreferrer">View repository ↗</a>
+            </div>
+          </article>
+
+          <!-- Channel 03: Private research -->
+          <article class="scope-channel">
+            <div class="scope-channel-header"><span>CH 03 / RESEARCH</span><span class="scope-private">PRIVATE</span></div>
+            <div class="scope-placeholder"><span class="scope-placeholder-icon">◇</span><span>RESEARCH IN PROGRESS</span></div>
+            <div class="scope-channel-footer">
+              <strong>Wireless Sensing & Simulation</strong>
+              <span>Not publicly available</span>
+            </div>
+          </article>
+
+          <!-- Channel 04: Future experiments -->
+          <article class="scope-channel">
+            <div class="scope-channel-header"><span>CH 04 / AVAILABLE</span><span class="scope-standby">STANDBY</span></div>
+            <div class="scope-placeholder"><span class="scope-placeholder-icon">+</span><span>AWAITING NEXT EXPERIMENT</span></div>
+            <div class="scope-channel-footer">
+              <strong>What's next?</strong>
+              <span>More experiments to come</span>
+            </div>
+          </article>
+
+        </div>
       </div>
 
-      <div class="scope-controls" aria-hidden="true">
-        <span class="scope-control-label">MONITOR</span>
+      <!-- Decorative instrument controls -->
+      <aside class="scope-controls" aria-hidden="true">
+        <div class="scope-control-heading">CONTROL PANEL</div>
 
-        <div class="scope-knob"></div>
-        <span>GAIN</span>
+        <div class="scope-control-block">
+          <span>AMPLITUDE</span>
+          <div class="scope-knob"></div>
+          <small>GAIN / LEVEL</small>
+        </div>
 
-        <div class="scope-knob"></div>
-        <span>TIMEBASE</span>
+        <div class="scope-control-block">
+          <span>FREQUENCY</span>
+          <div class="scope-knob scope-knob-small"></div>
+          <small>SPAN / CENTER</small>
+        </div>
 
-        <div class="scope-indicator"></div>
-        <span>INPUT</span>
-      </div>
+        <div class="scope-keypad">
+          <span>FREQ</span><span>SPAN</span><span>BW</span>
+          <span>TRACE</span><span>MARK</span><span>AVG</span>
+          <span>MODE</span><span>SET</span><span class="scope-key-active">RUN</span>
+        </div>
+
+        <div class="scope-control-status"><span class="scope-status-led"></span> INPUT ACTIVE</div>
+      </aside>
 
     </div>
 
-    <div class="scope-footer">
-      <span>OSC / 001</span>
-      <span>FFT READY</span>
-      <span>OUTPUT / PROJECT MODULES</span>
+    <!-- Decorative instrument connectors -->
+    <div class="scope-connector-bar" aria-hidden="true">
+      <div class="scope-connector"><span class="scope-socket"></span><small>RF IN 1</small></div>
+      <div class="scope-connector"><span class="scope-socket"></span><small>RF IN 2</small></div>
+      <div class="scope-connector"><span class="scope-socket"></span><small>REF IN</small></div>
+      <div class="scope-connector"><span class="scope-socket"></span><small>AUX OUT</small></div>
+      <span class="scope-connector-note">LS / EXPERIMENTAL WORKBENCH</span>
     </div>
-
-  </div>
-
-  <!-- PROJECT MODULES -->
-  <div class="hands-on-projects">
-
-    <article class="hands-project">
-      <span class="hands-project-number">01 / Audio Processing</span>
-
-      <h3>Speech Enhancement Lab</h3>
-
-      <p>
-        Exploring audio analysis, speech enhancement,
-        and pretrained models.
-      </p>
-
-      <a href="https://github.com/desouz78/speech-enhancement-lab"
-         target="_blank" rel="noopener noreferrer">
-        Explore repository ↗
-      </a>
-    </article>
-
-    <article class="hands-project">
-      <span class="hands-project-number">02 / Data & Networks</span>
-
-      <h3>Brazilian Rural Connectivity</h3>
-
-      <p>
-        Exploring connectivity across Brazilian rural schools
-        through graph databases and network relationships.
-      </p>
-
-      <a href="https://github.com/desouz78/Final-Project---Big-Data-Tools-and-Techniques"
-         target="_blank" rel="noopener noreferrer">
-        Explore repository ↗
-      </a>
-    </article>
-
-    <article class="hands-project">
-      <span class="hands-project-number">03 / In Progress</span>
-
-      <h3>Still on the workbench.</h3>
-
-      <p>
-        Some experiments are still taking shape.
-        More to come when they're ready to share.
-      </p>
-
-      <span class="hands-project-pending">Under development</span>
-    </article>
 
   </div>
 
