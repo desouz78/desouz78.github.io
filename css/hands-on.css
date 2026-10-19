@@ -184,3 +184,8 @@
   .instrument-stage { left: 50%; width: min(1420px, calc(100vw - 32px)); height: clamp(800px, 105vh, 1040px); transform: translateX(-50%); overflow: visible; }
   .hands-on-section { padding-bottom: 100px; margin-bottom: 100px; }
 }
+
+/* Bring the 3D analyzer closer to its heading */
+@media (min-width: 901px) {
+  .instrument-stage { margin-top: -55px; }
+}

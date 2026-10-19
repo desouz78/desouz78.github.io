@@ -295,33 +295,55 @@ window.addEventListener("keydown", event => {
    RESPONSIVE CAMERA AND CABLE ANCHOR
    ========================================= */
 
-/* Physical cable: hidden transition beneath the chassis */
 
-const cableRoot = new THREE.Vector3(-4.90, -2.89, -1.12);
-const cablePort = inputJack.position.clone().add(new THREE.Vector3(0, 0, 0.39));
+/* Flexible cable between the page and the front connector */
 
-const cableCurve = new THREE.CatmullRomCurve3([
-  cableRoot.clone(),
-  new THREE.Vector3(-5.05, -3.28, -1.05),
-  new THREE.Vector3(-5.16, -3.60, 0.35),
-  new THREE.Vector3(-5.22, -3.48, 1.46),
-  new THREE.Vector3(-5.12, -3.12, 2.04),
-  new THREE.Vector3(-4.86, -2.76, 2.20),
-  cablePort
-], false, "centripetal");
+const cableEntryX = 0.115;
+const cableEntryY = 0.77;
 
 const cableJacketMaterial = new THREE.MeshBasicMaterial({ color: 0x82a9cc, transparent: true, opacity: 0.22, depthWrite: false, toneMapped: false });
 const cableGlassMaterial = new THREE.MeshBasicMaterial({ color: 0xd2eaff, transparent: true, opacity: 0.07, depthWrite: false, toneMapped: false });
 const cableLightMaterial = new THREE.MeshBasicMaterial({ color: 0xf18b49, transparent: true, opacity: 0.42, depthWrite: false, toneMapped: false });
 
-const cableJacketMesh = new THREE.Mesh(new THREE.TubeGeometry(cableCurve, 64, 0.23, 12, false), cableJacketMaterial);
-const cableGlassMesh = new THREE.Mesh(new THREE.TubeGeometry(cableCurve, 64, 0.19, 12, false), cableGlassMaterial);
-const cableLightMesh = new THREE.Mesh(new THREE.TubeGeometry(cableCurve, 64, 0.095, 10, false), cableLightMaterial);
+const cableJacketMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableJacketMaterial);
+const cableGlassMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableGlassMaterial);
+const cableLightMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableLightMaterial);
 
-cableJacketMesh.renderOrder = 1;
-cableGlassMesh.renderOrder = 2;
-cableLightMesh.renderOrder = 3;
-model.add(cableJacketMesh, cableGlassMesh, cableLightMesh);
+scene.add(cableJacketMesh, cableGlassMesh, cableLightMesh);
+
+function screenToWorld(fx, fy, z) {
+  const point = new THREE.Vector3(fx * 2 - 1, 1 - fy * 2, 0.5).unproject(camera);
+  const direction = point.sub(camera.position).normalize();
+  return camera.position.clone().addScaledVector(direction, (z - camera.position.z) / direction.z);
+}
+
+function updateFlexibleCable() {
+  model.updateMatrixWorld(true);
+  camera.updateMatrixWorld(true);
+
+  const inlet = screenToWorld(cableEntryX, cableEntryY, 2.15);
+  const port = new THREE.Vector3(-4.86, -2.49, 1.84).applyMatrix4(model.matrixWorld);
+  const normal = new THREE.Vector3(0, 0, 1).transformDirection(model.matrixWorld);
+
+  const firstBend = inlet.clone().add(new THREE.Vector3(0.50, 0, 0));
+  const lowerPoint = inlet.clone().lerp(port, 0.54);
+  lowerPoint.y = Math.min(inlet.y, port.y) - 0.95;
+  lowerPoint.z = Math.max(inlet.z, port.z) + 0.25;
+
+  const approach = port.clone().addScaledVector(normal, 0.75);
+  approach.y -= 0.58;
+
+  const nearPort = port.clone().addScaledVector(normal, 0.26);
+  const curve = new THREE.CatmullRomCurve3([inlet, firstBend, lowerPoint, approach, nearPort, port], false, "centripetal");
+
+  cableJacketMesh.geometry.dispose();
+  cableGlassMesh.geometry.dispose();
+  cableLightMesh.geometry.dispose();
+
+  cableJacketMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.28, 10, false);
+  cableGlassMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.24, 10, false);
+  cableLightMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.12, 8, false);
+}
 
 
 
@@ -343,11 +365,11 @@ function fitCamera(immediate = false) {
 
   for (const corner of fitCorners) {
     const point = corner.clone().applyMatrix4(model.matrixWorld);
-    const distance = point.z + Math.max(Math.abs(point.x) / (halfH * 0.88), Math.abs(point.y) / (halfV * 0.87));
+    const distance = point.z + Math.max(Math.abs(point.x) / (halfH * 0.95), Math.abs(point.y) / (halfV * 0.95));
     requiredDistance = Math.max(requiredDistance, distance);
   }
 
-  const targetDistance = Math.max(14, requiredDistance + 1.25);
+  const targetDistance = Math.max(12.8, requiredDistance + 0.45);
   const previousDistance = camera.position.z;
   const distance = immediate || targetDistance > previousDistance ? targetDistance : THREE.MathUtils.lerp(previousDistance, targetDistance, 0.15);
 
@@ -375,21 +397,13 @@ const resizeObserver = new ResizeObserver(resize);
 resizeObserver.observe(viewport);
 if ("IntersectionObserver" in window) new IntersectionObserver(entries => { visible = entries[0].isIntersecting; needsRender = true; }, { threshold: 0.01 }).observe(viewport);
 
-
 function updateCableAnchor() {
   const rect = viewport.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
 
-  model.updateMatrixWorld(true);
-  camera.updateMatrixWorld(true);
-
-  const point = cableRoot.clone().applyMatrix4(model.matrixWorld).project(camera);
-  if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
-
-  anchor.style.left = `${(point.x + 1) * rect.width / 2}px`;
-  anchor.style.top = `${(1 - point.y) * rect.height / 2}px`;
+  anchor.style.left = `${rect.width * cableEntryX}px`;
+  anchor.style.top = `${rect.height * cableEntryY}px`;
 }
-
 
 function animate() {
   requestAnimationFrame(animate);
@@ -406,6 +420,7 @@ function animate() {
   if (!needsRender) return;
   model.updateMatrixWorld(true);
   updateCableAnchor();
+  updateFlexibleCable();
   renderer.render(scene,camera);
   needsRender = false;
 }
