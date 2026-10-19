@@ -135,3 +135,25 @@
   .instrument-detail { grid-template-columns: 1fr; margin: 0; padding: 16px; }
   .instrument-detail a { grid-column: 1; grid-row: auto; width: fit-content; }
 }
+
+
+/* =========================================
+   FULL-SIZE 3D INSTRUMENT
+   ========================================= */
+
+.hands-on-section { max-width: var(--max-width); margin: 0 auto 90px; padding: 12px 0 35px; }
+.hands-on-heading { max-width: 730px; padding-left: clamp(16px, 6vw, 74px); margin-bottom: 10px; }
+.instrument-stage { height: clamp(690px, 86vh, 950px); }
+.scope-shell.instrument-ready { width: 100%; overflow: visible; }
+.instrument-ready .instrument-detail { display: none; }
+.instrument-hint { right: 24px; bottom: 16px; }
+
+@media (max-width: 900px) {
+  .instrument-stage { height: clamp(550px, 75vh, 760px); }
+}
+
+@media (max-width: 650px) {
+  .hands-on-section { padding: 20px 0 30px; }
+  .instrument-stage { height: 390px; }
+  .hands-on-heading { padding-left: 8px; }
+}
