@@ -149,6 +149,10 @@ function drawTransmissionCable() {
 
   const personalLeftX = railX;
 
+  const handsHeading = document.querySelector(".hands-on-heading");
+  const handsHeadingRect = handsHeading?.getBoundingClientRect();
+  const cableLaneX = handsHeadingRect ? Math.max(24, x(handsHeadingRect.left) - 58) : personalLeftX;
+
   const scopePort = document.getElementById("hands-on-anchor");
   const scopeRect = scopePort?.getBoundingClientRect();
   const scopeX = scopeRect ? x(scopeRect.left + scopeRect.width / 2) : personalLeftX;
@@ -189,8 +193,11 @@ function drawTransmissionCable() {
     // Return beneath the personal photo gallery
     `L ${personalLeftX} ${personalEndY}`,
 
-    // Continue downward and connect to the oscilloscope
-    `L ${personalLeftX} ${scopeY}`,
+    // Descend outside the Hands-on heading
+    `L ${cableLaneX} ${personalEndY}`,
+    `L ${cableLaneX} ${scopeY}`,
+
+    // Hand off to the physical 3D cable beneath the instrument
     `L ${scopeX} ${scopeY}`
 
   ].join(" ");

@@ -25,7 +25,6 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.45;
 viewport.appendChild(renderer.domElement);
-viewport.tabIndex = 0;
 viewport.setAttribute("role", "group");
 viewport.setAttribute("aria-label", "Interactive 3D analyzer. Drag to rotate, click a channel to read project details, press Escape to return.");
 
@@ -267,7 +266,7 @@ function activateScreen(position) {
 }
 renderer.domElement.addEventListener("pointerdown", event => {
   if (event.button !== 0) return;
-  viewport.focus({ preventScroll: true }); dragging = true; moved = false;
+  dragging = true; moved = false;
   startX = lastX = event.clientX; startY = lastY = event.clientY;
   renderer.domElement.setPointerCapture(event.pointerId);
 });
@@ -285,7 +284,8 @@ renderer.domElement.addEventListener("pointerup", event => {
 });
 renderer.domElement.addEventListener("pointercancel", () => dragging = false);
 renderer.domElement.addEventListener("lostpointercapture", () => dragging = false);
-viewport.addEventListener("keydown", event => {
+window.addEventListener("keydown", event => {
+  if (!visible) return;
   if (event.key === "Escape") { selected = null; drawDisplay(); needsRender = true; }
   const i = Number(event.key);
   if (i >= 1 && i <= 4) { selected = i-1; drawDisplay(); needsRender = true; }
@@ -294,6 +294,24 @@ viewport.addEventListener("keydown", event => {
 /* =========================================
    RESPONSIVE CAMERA AND CABLE ANCHOR
    ========================================= */
+
+
+/* Physical cable beneath the instrument */
+
+const cableGlassMaterial = new THREE.MeshStandardMaterial({ color: 0x7794ab, metalness: 0.12, roughness: 0.25, transparent: true, opacity: 0.42, depthWrite: false });
+const cableLightMaterial = new THREE.MeshBasicMaterial({ color: 0xf0a06b, transparent: true, opacity: 0.48, depthWrite: false });
+
+const cableGlassMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableGlassMaterial);
+const cableLightMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableLightMaterial);
+
+scene.add(cableGlassMesh, cableLightMesh);
+
+function screenToWorld(fx, fy, z) {
+  const point = new THREE.Vector3(fx * 2 - 1, 1 - fy * 2, 0.5).unproject(camera);
+  const direction = point.sub(camera.position).normalize();
+  return camera.position.clone().addScaledVector(direction, (z - camera.position.z) / direction.z);
+}
+
 
 function resize() {
   const rect = viewport.getBoundingClientRect();
@@ -313,13 +331,53 @@ const resizeObserver = new ResizeObserver(resize);
 resizeObserver.observe(viewport);
 if ("IntersectionObserver" in window) new IntersectionObserver(entries => { visible = entries[0].isIntersecting; needsRender = true; }, { threshold: 0.01 }).observe(viewport);
 
+
+
 function updateCableAnchor() {
   const rect = viewport.getBoundingClientRect();
-  const x = rect.width * 0.078;
-  const y = rect.height * 0.64;
-  anchor.style.left = `${Math.round(x)}px`;
-  anchor.style.top = `${Math.round(y)}px`;
+  if (!rect.width || !rect.height) return;
+
+  const entryX = 0.12;
+  const entryY = 0.89;
+
+  anchor.style.left = `${rect.width * entryX}px`;
+  anchor.style.top = `${rect.height * entryY}px`;
+
+  model.updateMatrixWorld(true);
+  camera.updateMatrixWorld(true);
+
+  const inlet = screenToWorld(entryX, entryY, -1.2);
+  const outward = new THREE.Vector3(0, 0, 1).applyQuaternion(model.quaternion).normalize();
+  const port = inputJack.getWorldPosition(new THREE.Vector3()).addScaledVector(outward, 0.36);
+  const undersideY = Math.min(-4.05, port.y - 1.2);
+
+  const belowPort = new THREE.Vector3(port.x - 0.3, undersideY, port.z + outward.z * 0.55);
+  const approach = port.clone().addScaledVector(outward, 0.85);
+  approach.y = undersideY + 0.35;
+
+  const nearPort = port.clone().addScaledVector(outward, 0.35);
+  nearPort.y -= 0.18;
+
+  const points = [
+    inlet,
+    new THREE.Vector3(inlet.x + 0.35, undersideY, inlet.z),
+    new THREE.Vector3((inlet.x + port.x) / 2, undersideY, -1.5),
+    belowPort,
+    approach,
+    nearPort,
+    port
+  ];
+
+  const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.25);
+
+  cableGlassMesh.geometry.dispose();
+  cableLightMesh.geometry.dispose();
+
+  cableGlassMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.23, 10, false);
+  cableLightMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.065, 8, false);
 }
+
+
 
 function animate() {
   requestAnimationFrame(animate);

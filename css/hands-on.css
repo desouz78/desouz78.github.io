@@ -163,3 +163,15 @@
 #instrument-scene:focus-visible { outline: none !important; border: none !important; box-shadow: none !important; }
 #instrument-scene canvas { outline: none !important; border: none !important; box-shadow: none !important; display: block; }
 .scope-shell:focus-within { outline: none !important; box-shadow: none !important; }
+
+
+
+/* Keep the Hands-on heading clear of the cable */
+
+@media (min-width: 651px) {
+  .hands-on-heading { padding-left: clamp(110px, 13vw, 160px); }
+}
+
+@media (max-width: 650px) {
+  .hands-on-heading { padding-left: 8px; }
+}
