@@ -3,7 +3,7 @@
    HANDS-ON / SIGNAL WORKBENCH
    ========================================= */
 
-.hands-on-section { position: relative; z-index: 3; max-width: 1050px; margin: 110px auto 140px; padding: 76px 20px 30px; border-top: 1px solid var(--border); scroll-margin-top: 105px; }
+.hands-on-section { position: relative; z-index: 3; max-width: 1050px; margin: 75px auto 140px; padding: 38px 20px 30px; border-top: 1px solid var(--border); scroll-margin-top: 105px; }
 .hands-on-heading { max-width: 730px; padding-left: 74px; margin-bottom: 44px; }
 .hands-on-heading h2 { margin-bottom: 20px; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 750; line-height: 1.08; letter-spacing: -0.055em; }
 .hands-on-heading p { max-width: 600px; color: var(--muted); font-size: 1rem; line-height: 1.8; }

@@ -251,7 +251,7 @@ if (cable) {
 
 const particleLayer = cable?.querySelector(".cable-particles");
 const signalPath = progressPath;
-const signalColors = ["#ff642e", "#ff8b42", "#ffb46a", "#ffe0a8"];
+const signalColors = ["#c5764f", "#d99367", "#efb785"];
 
 if (particleLayer && signalPath) {
   const svgNS = "http://www.w3.org/2000/svg";

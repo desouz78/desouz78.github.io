@@ -580,3 +580,7 @@ main.container {
   color: #d7deea;
   font-style: italic;
 }
+
+/* Match identity heading to the academic heading */
+
+.about-intro h2 { margin-bottom: 20px; font-size: clamp(1.9rem, 2.6vw, 2.6rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.045em; }
