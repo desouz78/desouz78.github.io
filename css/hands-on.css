@@ -157,3 +157,9 @@
   .instrument-stage { height: 390px; }
   .hands-on-heading { padding-left: 8px; }
 }
+
+#instrument-scene { outline: none !important; border: none !important; box-shadow: none !important; }
+#instrument-scene:focus { outline: none !important; border: none !important; box-shadow: none !important; }
+#instrument-scene:focus-visible { outline: none !important; border: none !important; box-shadow: none !important; }
+#instrument-scene canvas { outline: none !important; border: none !important; box-shadow: none !important; display: block; }
+.scope-shell:focus-within { outline: none !important; box-shadow: none !important; }

@@ -305,18 +305,22 @@ function resize() {
   camera.lookAt(0,0,-0.55);
   camera.updateProjectionMatrix();
   renderer.setSize(rect.width,rect.height,false);
+  updateCableAnchor();
   needsRender = true;
 }
+
 const resizeObserver = new ResizeObserver(resize);
 resizeObserver.observe(viewport);
 if ("IntersectionObserver" in window) new IntersectionObserver(entries => { visible = entries[0].isIntersecting; needsRender = true; }, { threshold: 0.01 }).observe(viewport);
 
 function updateCableAnchor() {
   const rect = viewport.getBoundingClientRect();
-  const point = inputJack.getWorldPosition(new THREE.Vector3()).project(camera);
-  anchor.style.left = `${(point.x+1)*rect.width/2}px`;
-  anchor.style.top = `${(1-point.y)*rect.height/2}px`;
+  const x = rect.width * 0.078;
+  const y = rect.height * 0.64;
+  anchor.style.left = `${Math.round(x)}px`;
+  anchor.style.top = `${Math.round(y)}px`;
 }
+
 function animate() {
   requestAnimationFrame(animate);
   if (!visible) return;
