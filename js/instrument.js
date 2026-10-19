@@ -312,17 +312,22 @@ function screenToWorld(fx, fy, z) {
   return camera.position.clone().addScaledVector(direction, (z - camera.position.z) / direction.z);
 }
 
-
 function resize() {
   const rect = viewport.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
-  camera.aspect = rect.width/rect.height;
-  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
-  const d = Math.max(12.0/(2*t*camera.aspect*0.90), 7.0/(2*t*0.88));
-  camera.position.set(0,0.14,d);
-  camera.lookAt(0,0,-0.55);
+
+  camera.aspect = rect.width / rect.height;
+
+  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const horizontalDistance = 12.2 / (2 * t * camera.aspect * 0.88);
+  const verticalDistance = 8.25 / (2 * t * 0.89);
+  const distance = Math.max(horizontalDistance, verticalDistance) + 5.35;
+
+  camera.position.set(0, 0.14, distance);
+  camera.lookAt(0, 0, -0.55);
   camera.updateProjectionMatrix();
-  renderer.setSize(rect.width,rect.height,false);
+  renderer.setSize(rect.width, rect.height, false);
+
   updateCableAnchor();
   needsRender = true;
 }
@@ -330,8 +335,6 @@ function resize() {
 const resizeObserver = new ResizeObserver(resize);
 resizeObserver.observe(viewport);
 if ("IntersectionObserver" in window) new IntersectionObserver(entries => { visible = entries[0].isIntersecting; needsRender = true; }, { threshold: 0.01 }).observe(viewport);
-
-
 
 function updateCableAnchor() {
   const rect = viewport.getBoundingClientRect();
@@ -347,37 +350,24 @@ function updateCableAnchor() {
   camera.updateMatrixWorld(true);
 
   const inlet = screenToWorld(entryX, entryY, -1.2);
-  const outward = new THREE.Vector3(0, 0, 1).applyQuaternion(model.quaternion).normalize();
-  const port = inputJack.getWorldPosition(new THREE.Vector3()).addScaledVector(outward, 0.36);
-  const undersideY = Math.min(-4.05, port.y - 1.2);
 
-  const belowPort = new THREE.Vector3(port.x - 0.3, undersideY, port.z + outward.z * 0.55);
-  const approach = port.clone().addScaledVector(outward, 0.85);
-  approach.y = undersideY + 0.35;
+  const underRear = new THREE.Vector3(-5.90, -3.85, -1.40).applyMatrix4(model.matrixWorld);
+  const underFront = new THREE.Vector3(-5.60, -3.85, 0.75).applyMatrix4(model.matrixWorld);
+  const approach = new THREE.Vector3(-4.86, -3.05, 2.35).applyMatrix4(model.matrixWorld);
+  const nearPort = new THREE.Vector3(-4.86, -2.49, 2.20).applyMatrix4(model.matrixWorld);
+  const port = new THREE.Vector3(-4.86, -2.49, 1.81).applyMatrix4(model.matrixWorld);
 
-  const nearPort = port.clone().addScaledVector(outward, 0.35);
-  nearPort.y -= 0.18;
+  const lead = inlet.clone().lerp(underRear, 0.45);
+  lead.y = Math.min(inlet.y, underRear.y) - 0.18;
 
-  const points = [
-    inlet,
-    new THREE.Vector3(inlet.x + 0.35, undersideY, inlet.z),
-    new THREE.Vector3((inlet.x + port.x) / 2, undersideY, -1.5),
-    belowPort,
-    approach,
-    nearPort,
-    port
-  ];
-
-  const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.25);
+  const curve = new THREE.CatmullRomCurve3([inlet, lead, underRear, underFront, approach, nearPort, port], false, "centripetal");
 
   cableGlassMesh.geometry.dispose();
   cableLightMesh.geometry.dispose();
 
-  cableGlassMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.23, 10, false);
-  cableLightMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.065, 8, false);
+  cableGlassMesh.geometry = new THREE.TubeGeometry(curve, 64, 0.23, 12, false);
+  cableLightMesh.geometry = new THREE.TubeGeometry(curve, 64, 0.065, 8, false);
 }
-
-
 
 function animate() {
   requestAnimationFrame(animate);

@@ -175,3 +175,12 @@
 @media (max-width: 650px) {
   .hands-on-heading { padding-left: 8px; }
 }
+
+
+/* Hands-on layout and full-width 3D scene */
+
+@media (min-width: 901px) {
+  .hands-on-heading { padding-top: 62px; }
+  .instrument-stage { left: 50%; width: min(1420px, calc(100vw - 32px)); height: clamp(800px, 105vh, 1040px); transform: translateX(-50%); overflow: visible; }
+  .hands-on-section { padding-bottom: 100px; margin-bottom: 100px; }
+}
