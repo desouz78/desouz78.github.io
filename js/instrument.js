@@ -374,8 +374,6 @@ window.addEventListener("hands-on-cable-progress", () => {
 
 /* Adaptive flexible cable: compact at rest, responsive to instrument rotation */
 
-let cableRestDistance = null;
-
 function updateFlexibleCable() {
   const rect = viewport.getBoundingClientRect();
   const anchorRect = anchor.getBoundingClientRect();
@@ -398,31 +396,40 @@ function updateFlexibleCable() {
   bncGroup.position.copy(inlet);
   bncGroup.scale.setScalar(couplerScale);
 
-  const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld);
 
-  const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
-  const sideRear = local(-6.48, -3.30, -3.10);
-  const sideFront = local(-6.48, -3.30, 2.78);
-  const approach = local(-5.45, -3.12, 2.78);
-  const port = local(-4.86, -2.49, 1.84);
-  const portNormal = new THREE.Vector3(0, 0, 1).transformDirection(model.matrixWorld);
-  const nearPort = port.clone().addScaledVector(portNormal, 0.42);
+const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld);
 
-  /* Measure how far the moving cable endpoint is from its fixed origin */
-  const distance = outlet.distanceTo(sideRear);
-  if (cableRestDistance === null) cableRestDistance = distance;
+const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
+const port = local(-4.86, -2.49, 1.84);
+const portNormal = new THREE.Vector3(0, 0, 1).transformDirection(model.matrixWorld);
 
-  const extension = Math.max(0, distance - cableRestDistance);
-  const slack = THREE.MathUtils.clamp(0.12 + extension * 0.30, 0.12, 0.85);
-  const firstDrop = THREE.MathUtils.clamp(0.18 + distance * 0.10, 0.18, 0.60);
+/* Project both cable endpoints onto the screen */
+const startProjected = outlet.clone().project(camera);
+const endProjected = port.clone().project(camera);
 
-  /* A short, smooth lead from the fixed BNC */
-  const first = outlet.clone().add(new THREE.Vector3(0, -firstDrop, 0));
-  const middle = outlet.clone().lerp(sideRear, 0.52);
-  middle.y -= slack;
+const startX = (startProjected.x + 1) * rect.width / 2;
+const startY = (1 - startProjected.y) * rect.height / 2;
+const endX = (endProjected.x + 1) * rect.width / 2;
+const endY = (1 - endProjected.y) * rect.height / 2;
 
-  /* The cable travels along the outside of the chassis before entering the front connector */
-  const curve = new THREE.CatmullRomCurve3([outlet, first, middle, sideRear, sideFront, approach, nearPort, port], false, "centripetal");
+/* Small, adaptive slack based on the distance between connectors */
+const distance = Math.hypot(endX - startX, endY - startY);
+const slack = THREE.MathUtils.clamp(12 + distance * 0.16, 14, 62);
+const lowY = Math.min(rect.height - 24, Math.max(startY, endY) + slack);
+
+/* Keep the main cable behind the analyzer */
+const behind = (x, y) => screenToWorld(x / rect.width, y / rect.height, rearZ);
+
+const first = behind(startX + (endX - startX) * 0.12, startY + Math.min(24, slack * 0.65));
+const middle = behind(startX + (endX - startX) * 0.47, lowY);
+const last = behind(startX + (endX - startX) * 0.78, lowY);
+
+/* Approach the physical front connector */
+const nearPort = port.clone().addScaledVector(portNormal, Math.max(0.24, cableRadius * 0.9));
+nearPort.y -= cableRadius * 0.38;
+
+const curve = new THREE.CatmullRomCurve3([outlet, first, middle, last, nearPort, port], false, "centripetal");
+
 
   cableJacketMesh.geometry.dispose();
   cableGlassMesh.geometry.dispose();
@@ -474,7 +481,6 @@ function resize() {
 
   camera.aspect = rect.width / rect.height;
   camera.updateProjectionMatrix();
-  cableRestDistance = null;
   fitCamera(true);
   renderer.setSize(rect.width, rect.height, false);
   updateCableAnchor();
