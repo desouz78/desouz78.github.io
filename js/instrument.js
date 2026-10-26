@@ -372,6 +372,7 @@ window.addEventListener("hands-on-cable-progress", () => {
 });
 
 
+
 function updateFlexibleCable() {
   const rect = viewport.getBoundingClientRect();
   const anchorRect = anchor.getBoundingClientRect();
@@ -380,9 +381,12 @@ function updateFlexibleCable() {
   model.updateMatrixWorld(true);
   camera.updateMatrixWorld(true);
 
+  const corners = fitCorners.map(point => point.clone().applyMatrix4(model.matrixWorld));
+  const rearZ = Math.min(...corners.map(point => point.z)) - 0.9;
+
   const fx = (anchorRect.left + anchorRect.width / 2 - rect.left) / rect.width;
   const fy = (anchorRect.top + anchorRect.height / 2 - rect.top) / rect.height;
-  const inlet = screenToWorld(fx, fy, 2.15);
+  const inlet = screenToWorld(fx, fy, rearZ);
 
   const pixelScale = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * (camera.position.z - inlet.z) / rect.height;
   const cableRadius = THREE.MathUtils.clamp(21 * pixelScale, 0.20, 0.38);
@@ -394,26 +398,23 @@ function updateFlexibleCable() {
   const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
   const port = new THREE.Vector3(-4.86, -2.49, 1.84).applyMatrix4(model.matrixWorld);
   const portNormal = new THREE.Vector3(0, 0, 1).transformDirection(model.matrixWorld);
+  const underPort = new THREE.Vector3(-4.86, -3.48, 2.10).applyMatrix4(model.matrixWorld);
 
   const project = point => {
     const p = point.clone().project(camera);
     return { x: (p.x + 1) * rect.width / 2, y: (1 - p.y) * rect.height / 2 };
   };
 
-  const corners = fitCorners.map(point => point.clone().applyMatrix4(model.matrixWorld));
   const projected = corners.map(project);
   const boxLeft = Math.min(...projected.map(p => p.x));
   const boxBottom = Math.max(...projected.map(p => p.y));
-  const boxFrontZ = Math.max(...corners.map(p => p.z));
 
   const start = project(outlet);
   const jack = project(port);
   const routeLeft = Math.max(36, Math.min(start.x - 30, boxLeft - 40));
   const routeBottom = Math.min(rect.height - 36, Math.max(boxBottom + 45, start.y + 105, jack.y + 90));
   const bendY = Math.min(routeBottom - 55, start.y + 125);
-  const frontZ = Math.max(5, boxFrontZ + 1.1, port.z + 1.3);
-
-  const routePoint = (x, y) => screenToWorld(x / rect.width, y / rect.height, frontZ);
+  const routePoint = (x, y) => screenToWorld(x / rect.width, y / rect.height, rearZ);
   const reach = jack.x - routeLeft;
 
   const points = [
@@ -425,7 +426,8 @@ function updateFlexibleCable() {
     routePoint(routeLeft + 38, routeBottom),
     routePoint(routeLeft + reach * 0.77, routeBottom),
     routePoint(routeLeft + reach * 0.92, Math.max(jack.y + 65, routeBottom - 90)),
-    port.clone().addScaledVector(portNormal, 0.42),
+    underPort,
+    port.clone().addScaledVector(portNormal, 0.18),
     port
   ];
 
@@ -442,6 +444,7 @@ function updateFlexibleCable() {
   const visibleSegments = Math.floor(64 * THREE.MathUtils.clamp(cableSignalProgress, 0, 1));
   cableLightMesh.geometry.setDrawRange(0, visibleSegments * 8 * 6);
 }
+
 
 
 
