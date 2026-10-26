@@ -475,11 +475,12 @@ function updateFlexibleCable() {
     points.push(local(leftX, bottomY, backZ));
   }
 
-  /* Remain outside the left side and underneath the chassis */
-  /* Shorter default cable path near the scope */
-  points.push(local(-5.98, -3.28, frontZ));
-  points.push(local(-5.38, -3.22, frontZ));
-  points.push(local(-5.05, -2.98, frontZ));
+  /* very short flexible cable: close to the pink sketch */
+  points.push(local(-6.26, -2.06, frontZ));
+  points.push(local(-6.22, -3.56, frontZ));
+  points.push(local(-5.58, -3.96, frontZ));
+  points.push(local(-5.02, -3.22, frontZ));
+
 
   /* Finish at the downward-facing socket of the BNC adapter */
   points.push(socket);
