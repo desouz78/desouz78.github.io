@@ -188,7 +188,7 @@
 
 /* Larger WebGL drawing area and higher instrument placement */
 @media (min-width: 901px) {
-  .instrument-stage { margin-top: -95px; overflow: visible; }
+  .instrument-stage { margin-top: -130px; overflow: visible; }
   #instrument-scene { position: absolute; inset: -28px -84px -170px; width: auto; height: auto; overflow: visible; }
   .scope-shell.instrument-ready { overflow: visible; }
 }

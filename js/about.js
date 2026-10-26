@@ -151,7 +151,7 @@ function drawTransmissionCable() {
 
   const handsHeading = document.querySelector(".hands-on-heading");
   const handsHeadingRect = handsHeading?.getBoundingClientRect();
-  const cableLaneX = handsHeadingRect ? x(handsHeadingRect.left) + 68 : personalLeftX;
+  const cableLaneX = handsHeadingRect ? x(handsHeadingRect.left) + 28 : personalLeftX;
 
   const scopePort = document.getElementById("hands-on-anchor");
   const scopeRect = scopePort?.getBoundingClientRect();
