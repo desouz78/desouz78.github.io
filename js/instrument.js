@@ -477,7 +477,7 @@ function fitCamera(immediate = false) {
   const previousDistance = camera.position.z;
   const distance = immediate || targetDistance > previousDistance ? targetDistance : THREE.MathUtils.lerp(previousDistance, targetDistance, 0.15);
 
-  camera.position.set(0, 0.22, d);
+  camera.position.set(0, 0.22, distance);
   camera.lookAt(0.20, 0.18, -0.55);
   camera.updateMatrixWorld(true);
 
