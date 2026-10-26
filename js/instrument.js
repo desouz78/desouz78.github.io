@@ -378,6 +378,7 @@ window.addEventListener("hands-on-cable-progress", () => {
 
 /* Adaptive cable routed outside the analyzer chassis */
 
+
 function updateFlexibleCable() {
   const rect = viewport.getBoundingClientRect();
   const anchorRect = anchor.getBoundingClientRect();
@@ -388,6 +389,7 @@ function updateFlexibleCable() {
 
   const corners = fitCorners.map(point => point.clone().applyMatrix4(model.matrixWorld));
   const rearZ = Math.min(...corners.map(point => point.z)) - 0.9;
+
   const fx = (anchorRect.left + anchorRect.width / 2 - rect.left) / rect.width;
   const fy = (anchorRect.top + anchorRect.height / 2 - rect.top) / rect.height;
   const inlet = screenToWorld(fx, fy, rearZ);
@@ -399,47 +401,27 @@ function updateFlexibleCable() {
   bncGroup.position.copy(inlet);
   bncGroup.scale.setScalar(couplerScale);
 
-  const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld);
   const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
-  const lead = outlet.clone().add(new THREE.Vector3(0, -0.30 * couplerScale, 0));
-  const start = model.worldToLocal(lead.clone());
+  const port = new THREE.Vector3(-4.86, -2.49, 1.84).applyMatrix4(model.matrixWorld);
 
-  /* Clearance coordinates measured against the actual chassis */
-  const leftX = -5.95;
-  const bottomY = -3.62;
-  const frontZ = 2.36;
-  const via = [];
+  const project = point => {
+    const p = point.clone().project(camera);
+    return { x: (p.x + 1) * rect.width / 2, y: (1 - p.y) * rect.height / 2 };
+  };
 
-  /* Choose an external route based on the fixed cable's position */
-  if (start.z < -2.90) {
-    via.push([leftX, start.y, start.z], [leftX, bottomY, start.z]);
-  } else if (start.x < -5.70) {
-    via.push([start.x, bottomY, start.z], [leftX, bottomY, start.z]);
-  } else if (start.y < -3.42) {
-    via.push([leftX, start.y, start.z], [leftX, bottomY, start.z]);
-  } else if (start.x > 5.70) {
-    via.push([start.x, bottomY, start.z], [leftX, bottomY, start.z]);
-  } else if (start.z > 2.05) {
-    via.push([start.x, bottomY, start.z], [leftX, bottomY, start.z]);
-  } else if (start.y > 3.42) {
-    via.push([leftX, start.y, start.z], [leftX, bottomY, start.z]);
-  } else {
-    via.push([leftX, start.y, Math.min(start.z, -3.12)], [leftX, bottomY, -3.12]);
-  }
+  const start = project(outlet);
+  const end = project(port);
+  const chassisBottom = Math.max(...corners.map(point => project(point).y));
 
-  /* Travel outside the left and lower chassis edges */
-  const points = [
-    outlet,
-    lead,
-    ...via.map(([x, y, z]) => local(x, y, z)),
-    local(leftX, bottomY, frontZ),
-    local(-5.65, -3.40, frontZ),
-    local(-5.12, -2.82, frontZ),
-    local(-4.86, -2.49, 1.84)
-  ];
+  /* A single short U-shaped bend below the instrument */
+  const bendY = Math.min(rect.height - 24, Math.max(chassisBottom + 48, start.y + 85, end.y + 78));
+  const direction = Math.sign(end.x - start.x) || 1;
+  const approach = Math.min(35, Math.abs(end.x - start.x) * 0.20);
 
-  const cleanPoints = points.filter((point, i) => i === 0 || point.distanceTo(points[i - 1]) > 0.03);
-  const curve = new THREE.CatmullRomCurve3(cleanPoints, false, "centripetal");
+  const control1 = screenToWorld(start.x / rect.width, bendY / rect.height, rearZ);
+  const control2 = screenToWorld((end.x - direction * approach) / rect.width, bendY / rect.height, rearZ);
+
+  const curve = new THREE.CubicBezierCurve3(outlet, control1, control2, port);
 
   cableJacketMesh.geometry.dispose();
   cableGlassMesh.geometry.dispose();
@@ -452,6 +434,7 @@ function updateFlexibleCable() {
   const visibleSegments = Math.floor(64 * THREE.MathUtils.clamp(cableSignalProgress, 0, 1));
   cableLightMesh.geometry.setDrawRange(0, visibleSegments * 8 * 6);
 }
+
 
 const fitCorners = [];
 for (const x of [-5.85, 5.85]) {
