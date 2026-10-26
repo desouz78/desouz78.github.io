@@ -406,6 +406,7 @@ window.addEventListener("hands-on-cable-progress", () => {
 
 /* Flexible RF cable routed around the outside of the analyzer */
 
+
 function updateFlexibleCable() {
   const rect = viewport.getBoundingClientRect();
   const anchorRect = anchor.getBoundingClientRect();
@@ -416,6 +417,8 @@ function updateFlexibleCable() {
 
   const corners = fitCorners.map(point => point.clone().applyMatrix4(model.matrixWorld));
   const rearZ = Math.min(...corners.map(point => point.z)) - 0.9;
+  const frontZ = Math.max(...corners.map(point => point.z)) + 0.55;
+
   const fx = (anchorRect.left + anchorRect.width / 2 - rect.left) / rect.width;
   const fy = (anchorRect.top + anchorRect.height / 2 - rect.top) / rect.height;
   const inlet = screenToWorld(fx, fy, rearZ);
@@ -428,65 +431,40 @@ function updateFlexibleCable() {
   bncGroup.scale.setScalar(couplerScale);
 
   const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
-  const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld);
-  const startLocal = model.worldToLocal(outlet.clone());
   const socket = new THREE.Vector3();
   scopeCableSocket.getWorldPosition(socket);
 
-  /* Exterior routing boundaries, with clearance around the chassis */
-  const leftX = -6.35;
-  const rightX = 6.35;
-  const bottomY = -4.05;
-  const topY = 4.25;
-  const backZ = -3.55;
-  const frontZ = 2.75;
+  /* Convert 3D positions into screen coordinates */
+  const project = point => {
+    const p = point.clone().project(camera);
+    return { x: (p.x + 1) * rect.width / 2, y: (1 - p.y) * rect.height / 2 };
+  };
 
-  const points = [outlet];
+  const start = project(outlet);
+  const end = project(socket);
+  const dx = end.x - start.x;
 
-  /* Leave the fixed coupler vertically */
-  points.push(outlet.clone().add(new THREE.Vector3(0, -0.20 * couplerScale, 0)));
+  /* Keep the bend just below the analyzer's silhouette */
+  const chassisBottom = Math.max(...corners.map(point => project(point).y));
+  const bottomY = Math.min(rect.height - 30, Math.max(chassisBottom + 32, start.y + 65, end.y + 65));
 
-  /* Route around whichever exterior face contains the fixed endpoint */
-  if (startLocal.x < -5.75) {
-    points.push(local(leftX, startLocal.y, startLocal.z));
-    points.push(local(leftX, bottomY, startLocal.z));
-  } else if (startLocal.y < -3.44) {
-    points.push(local(startLocal.x, bottomY, startLocal.z));
-    points.push(local(leftX, bottomY, startLocal.z));
-  } else if (startLocal.z < -2.90) {
-    points.push(local(startLocal.x, startLocal.y, backZ));
-    points.push(local(leftX, startLocal.y, backZ));
-    points.push(local(leftX, bottomY, backZ));
-  } else if (startLocal.x > 5.75) {
-    points.push(local(rightX, startLocal.y, startLocal.z));
-    points.push(local(rightX, bottomY, startLocal.z));
-    points.push(local(leftX, bottomY, startLocal.z));
-  } else if (startLocal.y > 3.44) {
-    points.push(local(startLocal.x, topY, startLocal.z));
-    points.push(local(leftX, topY, startLocal.z));
-    points.push(local(leftX, bottomY, startLocal.z));
-  } else if (startLocal.z > 2.10) {
-    points.push(local(startLocal.x, startLocal.y, frontZ));
-    points.push(local(leftX, startLocal.y, frontZ));
-    points.push(local(leftX, bottomY, frontZ));
-  } else {
-    points.push(local(startLocal.x, startLocal.y, backZ));
-    points.push(local(leftX, startLocal.y, backZ));
-    points.push(local(leftX, bottomY, backZ));
-  }
+  /* Place each segment at the correct depth */
+  const behind = (x, y) => screenToWorld(x / rect.width, y / rect.height, rearZ);
+  const inFront = (x, y) => screenToWorld(x / rect.width, y / rect.height, frontZ);
 
-  /* very short flexible cable: close to the pink sketch */
-  points.push(local(-6.26, -2.06, frontZ));
-  points.push(local(-6.22, -3.56, frontZ));
-  points.push(local(-5.58, -3.96, frontZ));
-  points.push(local(-5.02, -3.22, frontZ));
+  /* One continuous U-shaped path, without detours */
+  const points = [
+    outlet,
+    behind(start.x, start.y + (bottomY - start.y) * 0.45),
+    behind(start.x + dx * 0.10, bottomY - 10),
+    behind(start.x + dx * 0.40, bottomY),
+    inFront(start.x + dx * 0.65, bottomY),
+    inFront(end.x - dx * 0.08, bottomY - 14),
+    inFront(end.x, end.y + 30),
+    socket
+  ];
 
-
-  /* Finish at the downward-facing socket of the BNC adapter */
-  points.push(socket);
-
-  const cleanPoints = points.filter((point, i) => i === 0 || point.distanceTo(points[i - 1]) > 0.04);
-  const curve = new THREE.CatmullRomCurve3(cleanPoints, false, "centripetal");
+  const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
 
   cableJacketMesh.geometry.dispose();
   cableGlassMesh.geometry.dispose();
@@ -499,6 +477,7 @@ function updateFlexibleCable() {
   const visibleSegments = Math.floor(64 * THREE.MathUtils.clamp(cableSignalProgress, 0, 1));
   cableLightMesh.geometry.setDrawRange(0, visibleSegments * 8 * 6);
 }
+
 
 const fitCorners = [];
 for (const x of [-5.85, 5.85]) {
