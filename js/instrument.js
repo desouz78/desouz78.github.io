@@ -35,6 +35,7 @@ const rim = new THREE.DirectionalLight(0xe18e56, 2.2); rim.position.set(7, 4, -7
 const rear = new THREE.DirectionalLight(0x90a9bf, 2.0); rear.position.set(-6, 5, -10); scene.add(rear);
 
 const model = new THREE.Group();
+model.position.set(0.55, 0.32, 0);
 model.rotation.set(0, 0, 0);
 scene.add(model);
 const finish = (color, metalness = 0.7, roughness = 0.36) => new THREE.MeshStandardMaterial({ color, metalness, roughness });
@@ -476,8 +477,8 @@ function fitCamera(immediate = false) {
   const previousDistance = camera.position.z;
   const distance = immediate || targetDistance > previousDistance ? targetDistance : THREE.MathUtils.lerp(previousDistance, targetDistance, 0.15);
 
-  camera.position.set(0, 0.14, distance);
-  camera.lookAt(0, 0, -0.55);
+  camera.position.set(0, 0.22, d);
+  camera.lookAt(0.20, 0.18, -0.55);
   camera.updateMatrixWorld(true);
 
   return Math.abs(previousDistance - distance) > 0.005;
