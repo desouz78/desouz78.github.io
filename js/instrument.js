@@ -417,7 +417,7 @@ function updateFlexibleCable() {
 
   const corners = fitCorners.map(point => point.clone().applyMatrix4(model.matrixWorld));
   const rearZ = Math.min(...corners.map(point => point.z)) - 0.9;
-  const frontZ = Math.max(...corners.map(point => point.z)) + 0.55;
+  const frontZ = Math.max(...corners.map(point => point.z)) + 0.45;
 
   const fx = (anchorRect.left + anchorRect.width / 2 - rect.left) / rect.width;
   const fy = (anchorRect.top + anchorRect.height / 2 - rect.top) / rect.height;
@@ -434,45 +434,54 @@ function updateFlexibleCable() {
   const socket = new THREE.Vector3();
   scopeCableSocket.getWorldPosition(socket);
 
-  /* Convert 3D positions into screen coordinates */
   const project = point => {
     const p = point.clone().project(camera);
-    return { x: (p.x + 1) * rect.width / 2, y: (1 - p.y) * rect.height / 2 };
+    return new THREE.Vector2((p.x + 1) * rect.width / 2, (1 - p.y) * rect.height / 2);
   };
 
   const start = project(outlet);
   const end = project(socket);
-  const dx = end.x - start.x;
 
-  /* Keep the bend just below the analyzer's silhouette */
-  const chassisBottom = Math.max(...corners.map(point => project(point).y));
-  const bottomY = Math.min(rect.height - 30, Math.max(chassisBottom + 32, start.y + 65, end.y + 65));
+  /* Calculate the instrument's visible lower boundary */
+  const outline = [];
+  for (const x of [-5.5, 5.5]) {
+    for (const y of [-3.25, 3.25]) {
+      for (const z of [-2.65, 2.5]) outline.push(new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld));
+    }
+  }
 
-  /* Place each segment at the correct depth */
-  const behind = (x, y) => screenToWorld(x / rect.width, y / rect.height, rearZ);
-  const inFront = (x, y) => screenToWorld(x / rect.width, y / rect.height, frontZ);
+  const chassisBottom = Math.max(...outline.map(point => project(point).y));
 
-  /* One continuous U-shaped path, without detours */
-  const points = [
-    outlet,
-    behind(start.x, start.y + (bottomY - start.y) * 0.45),
-    behind(start.x + dx * 0.10, bottomY - 10),
-    behind(start.x + dx * 0.40, bottomY),
-    inFront(start.x + dx * 0.65, bottomY),
-    inFront(end.x - dx * 0.08, bottomY - 14),
-    inFront(end.x, end.y + 30),
-    socket
-  ];
+  /* Compact U shape, with enough clearance below the instrument */
+  const bendY = Math.min(rect.height - 24, Math.max(chassisBottom + 28, start.y + 50, end.y + 48));
+  const controlY = (bendY - 0.125 * (start.y + end.y)) / 0.75;
 
-  const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
+  /* Exactly one smooth curve between the two connectors */
+  const screenCurve = new THREE.CubicBezierCurve(
+    start,
+    new THREE.Vector2(start.x, controlY),
+    new THREE.Vector2(end.x, controlY),
+    end
+  );
+
+  /* Convert the same curve into 3D without adding extra bends */
+  const cableCurve = new THREE.Curve();
+
+  cableCurve.getPoint = (t, target = new THREE.Vector3()) => {
+    const p = screenCurve.getPoint(t);
+    const transition = THREE.MathUtils.smoothstep(t, 0.30, 0.75);
+    const endDepth = THREE.MathUtils.lerp(frontZ, socket.z, THREE.MathUtils.smoothstep(t, 0.78, 1));
+    const z = THREE.MathUtils.lerp(outlet.z, endDepth, transition);
+    return target.copy(screenToWorld(p.x / rect.width, p.y / rect.height, z));
+  };
 
   cableJacketMesh.geometry.dispose();
   cableGlassMesh.geometry.dispose();
   cableLightMesh.geometry.dispose();
 
-  cableJacketMesh.geometry = new THREE.TubeGeometry(curve, 64, cableRadius, 12, false);
-  cableGlassMesh.geometry = new THREE.TubeGeometry(curve, 64, cableRadius * 0.86, 12, false);
-  cableLightMesh.geometry = new THREE.TubeGeometry(curve, 64, cableRadius * 0.43, 8, false);
+  cableJacketMesh.geometry = new THREE.TubeGeometry(cableCurve, 64, cableRadius, 12, false);
+  cableGlassMesh.geometry = new THREE.TubeGeometry(cableCurve, 64, cableRadius * 0.86, 12, false);
+  cableLightMesh.geometry = new THREE.TubeGeometry(cableCurve, 64, cableRadius * 0.43, 8, false);
 
   const visibleSegments = Math.floor(64 * THREE.MathUtils.clamp(cableSignalProgress, 0, 1));
   cableLightMesh.geometry.setDrawRange(0, visibleSegments * 8 * 6);
