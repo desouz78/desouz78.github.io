@@ -296,10 +296,7 @@ window.addEventListener("keydown", event => {
    ========================================= */
 
 
-/* Flexible cable between the page and the front connector */
-
-const cableEntryX = 0.115;
-const cableEntryY = 0.77;
+/* BNC RF bulkhead coupler and flexible transmission cable */
 
 const cableJacketMaterial = new THREE.MeshBasicMaterial({ color: 0x82a9cc, transparent: true, opacity: 0.22, depthWrite: false, toneMapped: false });
 const cableGlassMaterial = new THREE.MeshBasicMaterial({ color: 0xd2eaff, transparent: true, opacity: 0.07, depthWrite: false, toneMapped: false });
@@ -308,8 +305,56 @@ const cableLightMaterial = new THREE.MeshBasicMaterial({ color: 0xf18b49, transp
 const cableJacketMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableJacketMaterial);
 const cableGlassMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableGlassMaterial);
 const cableLightMesh = new THREE.Mesh(new THREE.BufferGeometry(), cableLightMaterial);
-
 scene.add(cableJacketMesh, cableGlassMesh, cableLightMesh);
+
+/* Stationary BNC coupling assembly */
+
+const bncGroup = new THREE.Group();
+scene.add(bncGroup);
+
+const bncSteel = finish(0x71879a, 0.88, 0.27);
+const bncBright = finish(0xc4d2dc, 0.90, 0.22);
+const bncDark = finish(0x263545, 0.65, 0.44);
+const bncRubber = finish(0x172432, 0.12, 0.84);
+
+function bncCylinder(radius, height, y, material, sides = 32) {
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, height, sides), material);
+  mesh.position.y = y;
+  bncGroup.add(mesh);
+  return mesh;
+}
+
+function bncRing(radius, thickness, y, material) {
+  const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, thickness, 8, 32), material);
+  mesh.rotation.x = Math.PI / 2;
+  mesh.position.y = y;
+  bncGroup.add(mesh);
+  return mesh;
+}
+
+/* Bulkhead body, hexagonal nut and locking sleeve */
+
+bncCylinder(0.29, 0.40, 0.12, bncSteel);
+bncCylinder(0.39, 0.17, 0.22, bncBright, 6);
+bncCylinder(0.32, 0.13, 0.02, bncDark);
+bncCylinder(0.31, 0.21, -0.16, bncSteel);
+bncRing(0.32, 0.035, -0.22, bncBright);
+bncRing(0.30, 0.025, -0.29, bncDark);
+
+/* Bayonet locking pins */
+
+for (const side of [-1, 1]) {
+  const pin = new THREE.Mesh(new THREE.SphereGeometry(0.068, 10, 8), bncBright);
+  pin.position.set(side * 0.31, -0.15, 0);
+  bncGroup.add(pin);
+}
+
+/* Flexible cable strain relief */
+
+bncCylinder(0.25, 0.17, -0.37, bncRubber);
+for (const y of [-0.34, -0.39, -0.44]) bncRing(0.247, 0.014, y, bncSteel);
+
+/* Screen-to-world alignment */
 
 function screenToWorld(fx, fy, z) {
   const point = new THREE.Vector3(fx * 2 - 1, 1 - fy * 2, 0.5).unproject(camera);
@@ -317,37 +362,69 @@ function screenToWorld(fx, fy, z) {
   return camera.position.clone().addScaledVector(direction, (z - camera.position.z) / direction.z);
 }
 
+/* Scroll-controlled signal */
+
+let cableSignalProgress = window.handsOnCableSignalProgress || 0;
+
+window.addEventListener("hands-on-cable-progress", () => {
+  cableSignalProgress = window.handsOnCableSignalProgress || 0;
+  needsRender = true;
+});
+
 function updateFlexibleCable() {
+  const rect = viewport.getBoundingClientRect();
+  const anchorRect = anchor.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+
   model.updateMatrixWorld(true);
   camera.updateMatrixWorld(true);
 
-  const inlet = screenToWorld(cableEntryX, cableEntryY, 2.15);
-  const port = new THREE.Vector3(-4.86, -2.49, 1.84).applyMatrix4(model.matrixWorld);
-  const normal = new THREE.Vector3(0, 0, 1).transformDirection(model.matrixWorld);
+  const fx = (anchorRect.left + anchorRect.width / 2 - rect.left) / rect.width;
+  const fy = (anchorRect.top + anchorRect.height / 2 - rect.top) / rect.height;
+  const inlet = screenToWorld(fx, fy, 2.15);
 
-  const firstBend = inlet.clone().add(new THREE.Vector3(0.50, 0, 0));
-  const lowerPoint = inlet.clone().lerp(port, 0.54);
-  lowerPoint.y = Math.min(inlet.y, port.y) - 0.95;
-  lowerPoint.z = Math.max(inlet.z, port.z) + 0.25;
+  const pixelScale = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * (camera.position.z - inlet.z) / rect.height;
+  const cableRadius = THREE.MathUtils.clamp(21 * pixelScale, 0.20, 0.38);
+  const couplerScale = cableRadius / 0.28;
 
-  const approach = port.clone().addScaledVector(normal, 0.75);
-  approach.y -= 0.58;
+  bncGroup.position.copy(inlet);
+  bncGroup.scale.setScalar(couplerScale);
 
-  const nearPort = port.clone().addScaledVector(normal, 0.26);
-  const curve = new THREE.CatmullRomCurve3([inlet, firstBend, lowerPoint, approach, nearPort, port], false, "centripetal");
+  const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld);
+
+  const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
+  const downward = outlet.clone().add(new THREE.Vector3(0, -0.55 * couplerScale, 0));
+
+  const port = local(-4.86, -2.49, 1.84);
+  const outsideLeft = local(-6.00, -3.75, -1.30);
+  const outsideFront = local(-6.00, -3.75, 2.65);
+  const approach = local(-5.18, -3.15, 2.72);
+  const nearPort = local(-4.86, -2.49, 2.48);
+
+  let minimumX = Infinity;
+  let minimumY = Infinity;
+  for (const corner of fitCorners) {
+    const point = corner.clone().applyMatrix4(model.matrixWorld);
+    minimumX = Math.min(minimumX, point.x);
+    minimumY = Math.min(minimumY, point.y);
+  }
+
+  const bypass = new THREE.Vector3(Math.min(outlet.x, minimumX - 0.60), Math.min(downward.y, minimumY - 0.65), Math.max(outlet.z, outsideLeft.z) + 0.25);
+
+  const curve = new THREE.CatmullRomCurve3([outlet, downward, bypass, outsideLeft, outsideFront, approach, nearPort, port], false, "centripetal");
 
   cableJacketMesh.geometry.dispose();
   cableGlassMesh.geometry.dispose();
   cableLightMesh.geometry.dispose();
 
-  cableJacketMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.28, 10, false);
-  cableGlassMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.24, 10, false);
-  cableLightMesh.geometry = new THREE.TubeGeometry(curve, 48, 0.12, 8, false);
+  cableJacketMesh.geometry = new THREE.TubeGeometry(curve, 64, cableRadius, 12, false);
+  cableGlassMesh.geometry = new THREE.TubeGeometry(curve, 64, cableRadius * 0.86, 12, false);
+  cableLightMesh.geometry = new THREE.TubeGeometry(curve, 64, cableRadius * 0.43, 8, false);
+
+  const visibleSegments = Math.floor(64 * THREE.MathUtils.clamp(cableSignalProgress, 0, 1));
+  cableLightMesh.geometry.setDrawRange(0, visibleSegments * 8 * 6);
 }
 
-
-
-/* Adaptive camera framing */
 
 const fitCorners = [];
 for (const x of [-5.85, 5.85]) {
@@ -397,13 +474,21 @@ const resizeObserver = new ResizeObserver(resize);
 resizeObserver.observe(viewport);
 if ("IntersectionObserver" in window) new IntersectionObserver(entries => { visible = entries[0].isIntersecting; needsRender = true; }, { threshold: 0.01 }).observe(viewport);
 
+
 function updateCableAnchor() {
   const rect = viewport.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
 
-  anchor.style.left = `${rect.width * cableEntryX}px`;
-  anchor.style.top = `${rect.height * cableEntryY}px`;
+  const heading = document.querySelector(".hands-on-heading");
+  const headingRect = heading?.getBoundingClientRect();
+
+  const x = headingRect && window.innerWidth > 900 ? headingRect.left + 68 - rect.left : rect.width * 0.115;
+  const y = rect.height * 0.77;
+
+  anchor.style.left = `${x}px`;
+  anchor.style.top = `${y}px`;
 }
+
 
 function animate() {
   requestAnimationFrame(animate);

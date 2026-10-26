@@ -193,12 +193,10 @@ function drawTransmissionCable() {
     // Return beneath the personal photo gallery
     `L ${personalLeftX} ${personalEndY}`,
 
-    // Descend outside the Hands-on heading
+    // Descend into the stationary BNC coupling
     `L ${cableLaneX} ${personalEndY}`,
-    `L ${cableLaneX} ${scopeY}`,
+    `L ${cableLaneX} ${scopeY}`
 
-    // Hand off to the physical 3D cable beneath the instrument
-    `L ${scopeX} ${scopeY}`
 
   ].join(" ");
 
@@ -229,13 +227,16 @@ function drawTransmissionCable() {
       Math.min(maxScroll - 1, cableStart - window.innerHeight * 0.65)
     );
 
-    const progress = Math.max(
-      0,
-      Math.min(
-        1,
-        (window.scrollY - startScroll) / Math.max(1, maxScroll - startScroll)
-      )
-    );
+    
+    const handoffScroll = Math.max(startScroll + 1, maxScroll - Math.min(320, maxScroll * 0.14));
+    const progress = Math.max(0, Math.min(1, (window.scrollY - startScroll) / Math.max(1, handoffScroll - startScroll)));
+    const flexibleProgress = Math.max(0, Math.min(1, (window.scrollY - handoffScroll) / Math.max(1, maxScroll - handoffScroll)));
+
+if (Math.abs(flexibleProgress - (window.handsOnCableSignalProgress ?? -1)) > 0.002) {
+  window.handsOnCableSignalProgress = flexibleProgress;
+  window.dispatchEvent(new Event("hands-on-cable-progress"));
+}
+
     
     progressPath.style.strokeDasharray = `${(length * progress).toFixed(1)} ${length.toFixed(1)}`;
 
