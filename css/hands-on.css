@@ -185,7 +185,11 @@
   .hands-on-section { padding-bottom: 100px; margin-bottom: 100px; }
 }
 
-/* Bring the 3D analyzer closer to its heading */
+
+/* Larger WebGL drawing area and higher instrument placement */
 @media (min-width: 901px) {
-  .instrument-stage { margin-top: -55px; }
+  .instrument-stage { margin-top: -95px; overflow: visible; }
+  #instrument-scene { position: absolute; inset: -28px -84px -170px; width: auto; height: auto; overflow: visible; }
+  .scope-shell.instrument-ready { overflow: visible; }
 }
+

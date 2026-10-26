@@ -371,6 +371,7 @@ window.addEventListener("hands-on-cable-progress", () => {
   needsRender = true;
 });
 
+
 function updateFlexibleCable() {
   const rect = viewport.getBoundingClientRect();
   const anchorRect = anchor.getBoundingClientRect();
@@ -390,28 +391,45 @@ function updateFlexibleCable() {
   bncGroup.position.copy(inlet);
   bncGroup.scale.setScalar(couplerScale);
 
-  const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld);
-
   const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
-  const downward = outlet.clone().add(new THREE.Vector3(0, -0.55 * couplerScale, 0));
+  const port = new THREE.Vector3(-4.86, -2.49, 1.84).applyMatrix4(model.matrixWorld);
+  const portNormal = new THREE.Vector3(0, 0, 1).transformDirection(model.matrixWorld);
 
-  const port = local(-4.86, -2.49, 1.84);
-  const outsideLeft = local(-6.00, -3.75, -1.30);
-  const outsideFront = local(-6.00, -3.75, 2.65);
-  const approach = local(-5.18, -3.15, 2.72);
-  const nearPort = local(-4.86, -2.49, 2.48);
+  const project = point => {
+    const p = point.clone().project(camera);
+    return { x: (p.x + 1) * rect.width / 2, y: (1 - p.y) * rect.height / 2 };
+  };
 
-  let minimumX = Infinity;
-  let minimumY = Infinity;
-  for (const corner of fitCorners) {
-    const point = corner.clone().applyMatrix4(model.matrixWorld);
-    minimumX = Math.min(minimumX, point.x);
-    minimumY = Math.min(minimumY, point.y);
-  }
+  const corners = fitCorners.map(point => point.clone().applyMatrix4(model.matrixWorld));
+  const projected = corners.map(project);
+  const boxLeft = Math.min(...projected.map(p => p.x));
+  const boxBottom = Math.max(...projected.map(p => p.y));
+  const boxFrontZ = Math.max(...corners.map(p => p.z));
 
-  const bypass = new THREE.Vector3(Math.min(outlet.x, minimumX - 0.60), Math.min(downward.y, minimumY - 0.65), Math.max(outlet.z, outsideLeft.z) + 0.25);
+  const start = project(outlet);
+  const jack = project(port);
+  const routeLeft = Math.max(36, Math.min(start.x - 30, boxLeft - 40));
+  const routeBottom = Math.min(rect.height - 36, Math.max(boxBottom + 45, start.y + 105, jack.y + 90));
+  const bendY = Math.min(routeBottom - 55, start.y + 125);
+  const frontZ = Math.max(5, boxFrontZ + 1.1, port.z + 1.3);
 
-  const curve = new THREE.CatmullRomCurve3([outlet, downward, bypass, outsideLeft, outsideFront, approach, nearPort, port], false, "centripetal");
+  const routePoint = (x, y) => screenToWorld(x / rect.width, y / rect.height, frontZ);
+  const reach = jack.x - routeLeft;
+
+  const points = [
+    outlet,
+    routePoint(start.x, start.y + 48),
+    routePoint(routeLeft, Math.min(start.y + 82, bendY)),
+    routePoint(routeLeft, bendY),
+    routePoint(routeLeft, routeBottom - 38),
+    routePoint(routeLeft + 38, routeBottom),
+    routePoint(routeLeft + reach * 0.77, routeBottom),
+    routePoint(routeLeft + reach * 0.92, Math.max(jack.y + 65, routeBottom - 90)),
+    port.clone().addScaledVector(portNormal, 0.42),
+    port
+  ];
+
+  const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
 
   cableJacketMesh.geometry.dispose();
   cableGlassMesh.geometry.dispose();
@@ -424,6 +442,7 @@ function updateFlexibleCable() {
   const visibleSegments = Math.floor(64 * THREE.MathUtils.clamp(cableSignalProgress, 0, 1));
   cableLightMesh.geometry.setDrawRange(0, visibleSegments * 8 * 6);
 }
+
 
 
 const fitCorners = [];
@@ -442,7 +461,7 @@ function fitCamera(immediate = false) {
 
   for (const corner of fitCorners) {
     const point = corner.clone().applyMatrix4(model.matrixWorld);
-    const distance = point.z + Math.max(Math.abs(point.x) / (halfH * 0.95), Math.abs(point.y) / (halfV * 0.95));
+    const distance = point.z + Math.max(Math.abs(point.x) / (halfH * 0.90), Math.abs(point.y) / (halfV * 0.81));
     requiredDistance = Math.max(requiredDistance, distance);
   }
 
@@ -474,21 +493,19 @@ const resizeObserver = new ResizeObserver(resize);
 resizeObserver.observe(viewport);
 if ("IntersectionObserver" in window) new IntersectionObserver(entries => { visible = entries[0].isIntersecting; needsRender = true; }, { threshold: 0.01 }).observe(viewport);
 
-
 function updateCableAnchor() {
-  const rect = viewport.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
+  const stage = viewport.closest(".instrument-stage");
+  const stageRect = stage.getBoundingClientRect();
+  const headingRect = document.querySelector(".hands-on-heading")?.getBoundingClientRect();
 
-  const heading = document.querySelector(".hands-on-heading");
-  const headingRect = heading?.getBoundingClientRect();
+  if (!stageRect.width || !stageRect.height) return;
 
-  const x = headingRect && window.innerWidth > 900 ? headingRect.left + 68 - rect.left : rect.width * 0.115;
-  const y = rect.height * 0.77;
+  const x = headingRect && window.innerWidth > 900 ? headingRect.left + 68 - stageRect.left : stageRect.width * 0.115;
+  const y = stageRect.height * 0.71;
 
   anchor.style.left = `${x}px`;
   anchor.style.top = `${y}px`;
 }
-
 
 function animate() {
   requestAnimationFrame(animate);
