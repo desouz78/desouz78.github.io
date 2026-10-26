@@ -153,6 +153,31 @@ for (let row = 0; row < 3; row++) for (let col = 0; col < 3; col++) {
 const inputJack = cylinder(0.28, 0.18, -4.86, -2.49, 1.43, silver);
 cylinder(0.18, 0.22, -4.86, -2.49, 1.56, dark);
 cylinder(0.055, 0.24, -4.86, -2.49, 1.69, led);
+
+/* Right-angle BNC adapter on the front RF input */
+const scopeBNC = new THREE.Group();
+scopeBNC.position.set(-4.86, -2.49, 0);
+model.add(scopeBNC);
+
+function scopeBNCPart(radius, length, x, y, z, material, axis = "z", sides = 32) {
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, sides), material);
+  if (axis === "z") mesh.rotation.x = Math.PI / 2;
+  mesh.position.set(x, y, z);
+  scopeBNC.add(mesh);
+  return mesh;
+}
+
+scopeBNCPart(0.30, 0.22, 0, 0, 1.88, brushed);
+scopeBNCPart(0.35, 0.16, 0, 0, 2.02, silver, "z", 6);
+scopeBNCPart(0.25, 0.42, 0, 0, 2.22, brushed);
+scopeBNCPart(0.30, 0.30, 0, -0.22, 2.35, silver, "y");
+scopeBNCPart(0.26, 0.25, 0, -0.46, 2.35, edge, "y");
+scopeBNCPart(0.25, 0.26, 0, -0.67, 2.35, rubber, "y");
+
+const scopeCableSocket = new THREE.Object3D();
+scopeCableSocket.position.set(0, -0.80, 2.35);
+scopeBNC.add(scopeCableSocket);
+
 for (const x of [-3.72, -2.61, -1.50, -0.39]) {
   cylinder(0.22, 0.16, x, -2.49, 1.36, silver);
   cylinder(0.135, 0.20, x, -2.49, 1.48, dark);
@@ -379,6 +404,8 @@ window.addEventListener("hands-on-cable-progress", () => {
 /* Adaptive cable routed outside the analyzer chassis */
 
 
+/* Flexible RF cable routed around the outside of the analyzer */
+
 function updateFlexibleCable() {
   const rect = viewport.getBoundingClientRect();
   const anchorRect = anchor.getBoundingClientRect();
@@ -389,7 +416,6 @@ function updateFlexibleCable() {
 
   const corners = fitCorners.map(point => point.clone().applyMatrix4(model.matrixWorld));
   const rearZ = Math.min(...corners.map(point => point.z)) - 0.9;
-
   const fx = (anchorRect.left + anchorRect.width / 2 - rect.left) / rect.width;
   const fy = (anchorRect.top + anchorRect.height / 2 - rect.top) / rect.height;
   const inlet = screenToWorld(fx, fy, rearZ);
@@ -402,26 +428,63 @@ function updateFlexibleCable() {
   bncGroup.scale.setScalar(couplerScale);
 
   const outlet = inlet.clone().add(new THREE.Vector3(0, -0.52 * couplerScale, 0));
-  const port = new THREE.Vector3(-4.86, -2.49, 1.84).applyMatrix4(model.matrixWorld);
+  const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(model.matrixWorld);
+  const startLocal = model.worldToLocal(outlet.clone());
+  const socket = new THREE.Vector3();
+  scopeCableSocket.getWorldPosition(socket);
 
-  const project = point => {
-    const p = point.clone().project(camera);
-    return { x: (p.x + 1) * rect.width / 2, y: (1 - p.y) * rect.height / 2 };
-  };
+  /* Exterior routing boundaries, with clearance around the chassis */
+  const leftX = -6.35;
+  const rightX = 6.35;
+  const bottomY = -4.05;
+  const topY = 4.25;
+  const backZ = -3.55;
+  const frontZ = 2.75;
 
-  const start = project(outlet);
-  const end = project(port);
-  const chassisBottom = Math.max(...corners.map(point => project(point).y));
+  const points = [outlet];
 
-  /* A single short U-shaped bend below the instrument */
-  const bendY = Math.min(rect.height - 24, Math.max(chassisBottom + 48, start.y + 85, end.y + 78));
-  const direction = Math.sign(end.x - start.x) || 1;
-  const approach = Math.min(35, Math.abs(end.x - start.x) * 0.20);
+  /* Leave the fixed coupler vertically */
+  points.push(outlet.clone().add(new THREE.Vector3(0, -0.20 * couplerScale, 0)));
 
-  const control1 = screenToWorld(start.x / rect.width, bendY / rect.height, rearZ);
-  const control2 = screenToWorld((end.x - direction * approach) / rect.width, bendY / rect.height, rearZ);
+  /* Route around whichever exterior face contains the fixed endpoint */
+  if (startLocal.x < -5.75) {
+    points.push(local(leftX, startLocal.y, startLocal.z));
+    points.push(local(leftX, bottomY, startLocal.z));
+  } else if (startLocal.y < -3.44) {
+    points.push(local(startLocal.x, bottomY, startLocal.z));
+    points.push(local(leftX, bottomY, startLocal.z));
+  } else if (startLocal.z < -2.90) {
+    points.push(local(startLocal.x, startLocal.y, backZ));
+    points.push(local(leftX, startLocal.y, backZ));
+    points.push(local(leftX, bottomY, backZ));
+  } else if (startLocal.x > 5.75) {
+    points.push(local(rightX, startLocal.y, startLocal.z));
+    points.push(local(rightX, bottomY, startLocal.z));
+    points.push(local(leftX, bottomY, startLocal.z));
+  } else if (startLocal.y > 3.44) {
+    points.push(local(startLocal.x, topY, startLocal.z));
+    points.push(local(leftX, topY, startLocal.z));
+    points.push(local(leftX, bottomY, startLocal.z));
+  } else if (startLocal.z > 2.10) {
+    points.push(local(startLocal.x, startLocal.y, frontZ));
+    points.push(local(leftX, startLocal.y, frontZ));
+    points.push(local(leftX, bottomY, frontZ));
+  } else {
+    points.push(local(startLocal.x, startLocal.y, backZ));
+    points.push(local(leftX, startLocal.y, backZ));
+    points.push(local(leftX, bottomY, backZ));
+  }
 
-  const curve = new THREE.CubicBezierCurve3(outlet, control1, control2, port);
+  /* Remain outside the left side and underneath the chassis */
+  points.push(local(leftX, bottomY, frontZ));
+  points.push(local(-5.55, bottomY, frontZ));
+  points.push(local(-4.86, -3.78, frontZ));
+
+  /* Finish at the downward-facing socket of the BNC adapter */
+  points.push(socket);
+
+  const cleanPoints = points.filter((point, i) => i === 0 || point.distanceTo(points[i - 1]) > 0.04);
+  const curve = new THREE.CatmullRomCurve3(cleanPoints, false, "centripetal");
 
   cableJacketMesh.geometry.dispose();
   cableGlassMesh.geometry.dispose();
@@ -434,7 +497,6 @@ function updateFlexibleCable() {
   const visibleSegments = Math.floor(64 * THREE.MathUtils.clamp(cableSignalProgress, 0, 1));
   cableLightMesh.geometry.setDrawRange(0, visibleSegments * 8 * 6);
 }
-
 
 const fitCorners = [];
 for (const x of [-5.85, 5.85]) {
